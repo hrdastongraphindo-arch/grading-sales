@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="sales_grading_triwulan.SalesmanDetailModal" owl="1">
+        <div class="sg-modal-backdrop" t-on-click.self="props.onClose">
+            <div class="sg-modal">
+                <div class="sg-modal-header">
+                    <div>
+                        <strong style="font-size: 16px;">Detail Performa &amp; Histori Salesman: <t t-esc="props.detail.identity.name"/></strong>
+                        <div style="font-size: 11.5px; color: #cbd5e1;">
+                            Tim: <t t-esc="props.detail.identity.team_name"/> |
+                            Supervisor: <t t-esc="props.detail.identity.supervisor_name"/> |
+                            Jabatan HR: <t t-esc="props.detail.identity.job_title"/>
+                        </div>
+                    </div>
+                    <button class="sg-btn sg-btn-outline" t-on-click="props.onClose">Tutup ✕</button>
+                </div>
+                <div class="sg-modal-body">
+                    <div class="sg-kpi-grid-4">
+                        <div class="sg-kpi-card accent-navy">
+                            <div class="sg-kpi-label">Grading Sekarang</div>
+                            <div class="sg-kpi-value" style="font-size: 15px;"><t t-esc="props.detail.identity.grading_awal"/></div>
+                        </div>
+                        <div class="sg-kpi-card accent-blue">
+                            <div class="sg-kpi-label">Potensi Grading TW Berikutnya (Tabel B)</div>
+                            <div class="sg-kpi-value" style="font-size: 15px;">
+                                <span t-att-class="gradeClass(props.detail.identity.grading_terbaru_key)">
+                                    <t t-esc="props.detail.identity.grading_terbaru"/>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="sg-kpi-card accent-gold">
+                            <div class="sg-kpi-label">Rata-rata GP / Bulan</div>
+                            <div class="sg-kpi-value" style="font-size: 16px;"><t t-esc="fmtIDR(props.detail.identity.rata_rata_gp)"/></div>
+                            <div class="sg-kpi-sub">Target Tabel A: <t t-esc="fmtIDR(props.detail.identity.target_gp_bulanan)"/></div>
+                        </div>
+                        <div class="sg-kpi-card accent-green">
+                            <div class="sg-kpi-label">% Pencapaian Terakhir</div>
+                            <div class="sg-kpi-value" style="font-size: 18px;"><t t-esc="fmtPct(props.detail.identity.persentase_pencapaian)"/></div>
+                        </div>
+                    </div>
+
+                    <div class="sg-card">
+                        <div class="sg-card-header">
+                            <h4 class="sg-card-title">Grafik Perkembangan Gross Profit Antar Triwulan</h4>
+                        </div>
+                        <div class="sg-card-body">
+                            <div class="sg-chart-wrap" style="height: 200px;">
+                                <canvas t-ref="trendChart"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sg-card">
+                        <div class="sg-card-header">
+                            <h4 class="sg-card-title">Rekap Grading per Triwulan &amp; Riwayat Promosi / Demosi</h4>
+                        </div>
+                        <div class="sg-table-wrap">
+                            <table class="sg-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tahun</th>
+                                        <th>Triwulan</th>
+                                        <th>Tim</th>
+                                        <th>Grading Sekarang</th>
+                                        <th>Potensi Grading TW Berikutnya</th>
+                                        <th class="text-end">Total GP 3 Bln</th>
+                                        <th class="text-end">Rata-rata/Bln</th>
+                                        <th class="text-end">% Capai</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="props.detail.quarterly_rows" t-as="q" t-key="q.id">
+                                        <td><t t-esc="q.year"/></td>
+                                        <td><t t-esc="q.quarter_label"/></td>
+                                        <td><t t-esc="q.team_name"/></td>
+                                        <td><span t-att-class="gradeClass(q.grading_awal)"><t t-esc="q.grading_awal_label"/></span></td>
+                                        <td><span t-att-class="gradeClass(q.grading_terbaru)"><t t-esc="q.grading_terbaru_label"/></span></td>
+                                        <td class="text-end fw-bold"><t t-esc="fmtIDR(q.total_gp)"/></td>
+                                        <td class="text-end"><t t-esc="fmtIDR(q.rata_rata_gp)"/></td>
+                                        <td class="text-end"><t t-esc="fmtPct(q.persentase_pencapaian)"/></td>
+                                        <td><span t-att-class="statusClass(q.status_perubahan)"><t t-esc="q.status_perubahan_label"/></span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="sg-charts-grid">
+                        <div class="sg-card">
+                            <div class="sg-card-header"><h4 class="sg-card-title">Rincian GP per Bulan (GP ORIMAX)</h4></div>
+                            <div class="sg-table-wrap" style="max-height: 220px; overflow-y: auto;">
+                                <table class="sg-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tahun</th>
+                                            <th>Bulan</th>
+                                            <th class="text-center">SO</th>
+                                            <th class="text-end">Gross Profit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="props.detail.monthly_rows" t-as="m" t-key="m.year + '-' + m.month">
+                                            <td><t t-esc="m.year"/></td>
+                                            <td><t t-esc="m.month_name"/></td>
+                                            <td class="text-center"><t t-esc="m.tx_count"/></td>
+                                            <td class="text-end fw-bold"><t t-esc="fmtIDR(m.gp)"/></td>
+                                        </tr>
+                                        <tr t-if="!props.detail.monthly_rows.length">
+                                            <td colspan="4" class="text-center text-muted">Belum ada rincian transaksi bulanan tersinkronisasi.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="sg-card">
+                            <div class="sg-card-header"><h4 class="sg-card-title">Audit Riwayat Perubahan Grading</h4></div>
+                            <div class="sg-table-wrap" style="max-height: 220px; overflow-y: auto;">
+                                <table class="sg-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Waktu</th>
+                                            <th>Periode</th>
+                                            <th>Perubahan</th>
+                                            <th>Oleh</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="props.detail.history_rows" t-as="h" t-key="h.id">
+                                            <td style="font-size: 11px;"><t t-esc="h.changed_at"/></td>
+                                            <td><t t-esc="h.periode"/></td>
+                                            <td><t t-esc="h.grade_before"/> → <strong><t t-esc="h.grade_after"/></strong></td>
+                                            <td><t t-esc="h.changed_by"/></td>
+                                        </tr>
+                                        <tr t-if="!props.detail.history_rows.length">
+                                            <td colspan="4" class="text-center text-muted">Belum ada catatan audit.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

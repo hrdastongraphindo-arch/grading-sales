@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+    <!-- 10 KASUS VALIDASI RESMI SECTION E KETENTUAN ANTON WIJAYA -->
+    <record id="demo_grading_case_1" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 1 (New Sales)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">new</field>
+        <field name="gp_bulan_1">10000000</field>
+        <field name="gp_bulan_2">10000000</field>
+        <field name="gp_bulan_3">10000000</field>
+        <field name="state">done</field>
+    </record>
+
+    <record id="demo_grading_case_2" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 2 (Junior Sales Min)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">new</field>
+        <field name="gp_bulan_1">15000000</field>
+        <field name="gp_bulan_2">15000000</field>
+        <field name="gp_bulan_3">15000000</field>
+        <field name="state">done</field>
+    </record>
+
+    <record id="demo_grading_case_3" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 3 (Junior Sales Mid)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">junior</field>
+        <field name="gp_bulan_1">20000000</field>
+        <field name="gp_bulan_2">20000000</field>
+        <field name="gp_bulan_3">20000000</field>
+        <field name="state">done</field>
+    </record>
+
+    <record id="demo_grading_case_4" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 4 (Senior Sales Min)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">junior</field>
+        <field name="gp_bulan_1">30000000</field>
+        <field name="gp_bulan_2">30000000</field>
+        <field name="gp_bulan_3">30000000</field>
+        <field name="state">done</field>
+    </record>
+
+    <record id="demo_grading_case_5" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 5 (Senior Sales Mid)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">senior</field>
+        <field name="gp_bulan_1">50000000</field>
+        <field name="gp_bulan_2">50000000</field>
+        <field name="gp_bulan_3">50000000</field>
+        <field name="state">done</field>
+    </record>
+
+    <record id="demo_grading_case_6" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 6 (Executive Sales Min)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">senior</field>
+        <field name="gp_bulan_1">55000000</field>
+        <field name="gp_bulan_2">55000000</field>
+        <field name="gp_bulan_3">55000000</field>
+        <field name="state">done</field>
+    </record>
+
+    <record id="demo_grading_case_7" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 7 (Executive Sales Mid)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">executive</field>
+        <field name="gp_bulan_1">60000000</field>
+        <field name="gp_bulan_2">60000000</field>
+        <field name="gp_bulan_3">60000000</field>
+        <field name="state">done</field>
+    </record>
+
+    <record id="demo_grading_case_8" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 8 (Star Sales Min 77 Jt)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">executive</field>
+        <field name="gp_bulan_1">77000000</field>
+        <field name="gp_bulan_2">77000000</field>
+        <field name="gp_bulan_3">77000000</field>
+        <field name="state">done</field>
+    </record>
+
+    <record id="demo_grading_case_9" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 9 (Star Sales 90 Jt)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">star</field>
+        <field name="gp_bulan_1">90000000</field>
+        <field name="gp_bulan_2">90000000</field>
+        <field name="gp_bulan_3">90000000</field>
+        <field name="state">done</field>
+    </record>
+
+    <record id="demo_grading_case_10" model="sales.grading.triwulan">
+        <field name="employee_name">Kasus Uji 10 (Star Sales 100 Jt)</field>
+        <field name="periode">Triwulan IV (Okt - Des 2026)</field>
+        <field name="grading_awal">star</field>
+        <field name="gp_bulan_1">100000000</field>
+        <field name="gp_bulan_2">100000000</field>
+        <field name="gp_bulan_3">100000000</field>
+        <field name="state">done</field>
+    </record>
+
+    </data>
+</odoo>

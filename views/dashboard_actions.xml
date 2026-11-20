@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Action Utama Menu 1: Grading Sales (Terpadu Rekap & Ranking) -->
+        <record id="action_grading_sales_main" model="ir.actions.client">
+            <field name="name">Grading Sales</field>
+            <field name="tag">sales_grading_main</field>
+        </record>
+
+        <!-- Backward Compatibility Aliases -->
+        <record id="action_grading_dashboard_salesman" model="ir.actions.client">
+            <field name="name">Grading Sales</field>
+            <field name="tag">sales_grading_main</field>
+        </record>
+
+        <record id="action_grading_rekap_salesman" model="ir.actions.client">
+            <field name="name">Grading Sales</field>
+            <field name="tag">sales_grading_main</field>
+        </record>
+
+        <record id="action_grading_ranking_salesman" model="ir.actions.client">
+            <field name="name">Grading Sales</field>
+            <field name="tag">sales_grading_main</field>
+        </record>
+
+        <!-- Action Utama Menu 2: Dashboard Supervisor / Tim -->
+        <record id="action_grading_dashboard_supervisor" model="ir.actions.client">
+            <field name="name">Dashboard Supervisor / Tim</field>
+            <field name="tag">sales_grading_dashboard_supervisor</field>
+        </record>
+    </data>
+</odoo>

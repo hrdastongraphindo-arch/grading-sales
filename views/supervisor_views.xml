@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <!-- ============================================================ -->
+    <!-- MASTER DATA SUPERVISOR                                       -->
+    <!-- ============================================================ -->
+    <record id="view_sales_grading_supervisor_tree" model="ir.ui.view">
+        <field name="name">sales.grading.supervisor.tree</field>
+        <field name="model">sales.grading.supervisor</field>
+        <field name="arch" type="xml">
+            <tree string="Master Data Supervisor" decoration-muted="not active">
+                <field name="employee_id"/>
+                <field name="grade" widget="badge"
+                       decoration-primary="grade == 'senior_spv'"
+                       decoration-info="grade == 'supervisor'"/>
+                <field name="team_display"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="target_gp_bulanan"/>
+                <field name="target_gp_tahunan"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'active'"
+                       decoration-danger="status == 'inactive'"/>
+                <field name="active" invisible="1"/>
+                <button name="action_view_assignments" string="Riwayat Penugasan" type="object" icon="fa-history"/>
+                <button name="action_deactivate_supervisor" string="Nonaktifkan" type="object"
+                        icon="fa-ban" attrs="{'invisible': [('active', '=', False)]}"
+                        confirm="Nonaktifkan Supervisor ini? Histori penugasan dan evaluasi sebelumnya tetap terjaga."/>
+                <button name="action_activate_supervisor" string="Aktifkan" type="object"
+                        icon="fa-check" attrs="{'invisible': [('active', '=', True)]}"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sales_grading_supervisor_form" model="ir.ui.view">
+        <field name="name">sales.grading.supervisor.form</field>
+        <field name="model">sales.grading.supervisor</field>
+        <field name="arch" type="xml">
+            <form string="Master Data Supervisor">
+                <header>
+                    <button name="action_view_assignments" string="Lihat Riwayat Penugasan" type="object"
+                            class="btn-secondary" icon="fa-history"/>
+                    <button name="action_deactivate_supervisor" string="Nonaktifkan Supervisor" type="object"
+                            class="btn-danger" attrs="{'invisible': [('active', '=', False)]}"
+                            confirm="Nonaktifkan Supervisor ini? Data historis tidak akan dihapus."/>
+                    <button name="action_activate_supervisor" string="Aktifkan Kembali" type="object"
+                            class="btn-success" attrs="{'invisible': [('active', '=', True)]}"/>
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_assignments" type="object" class="oe_stat_button" icon="fa-sitemap">
+                            <field name="assignment_count" widget="statinfo" string="Penugasan Tim"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="employee_id" string="Nama Supervisor (Employees Odoo)"/>
+                        <h1>
+                            <field name="employee_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Informasi Jabatan &amp; Status">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                            <field name="user_id"/>
+                            <field name="grade"/>
+                            <field name="primary_team_id" string="Tim Sales"/>
+                            <field name="allow_multi_team"/>
+                            <field name="team_display" readonly="1"/>
+                        </group>
+                        <group string="Periode &amp; Target GP Supervisor">
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="status"/>
+                            <field name="target_gp_bulanan" readonly="1"/>
+                            <field name="target_gp_triwulan" readonly="1"/>
+                            <field name="target_gp_tahunan" readonly="1"/>
+                            <field name="team_composition_desc" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Keterangan">
+                        <field name="notes" nolabel="1" placeholder="Catatan tambahan penugasan atau jabatan..."/>
+                    </group>
+                    <notebook>
+                        <page string="Riwayat Penugasan Tim" name="assignments">
+                            <field name="assignment_ids">
+                                <tree editable="bottom">
+                                    <field name="team_id"/>
+                                    <field name="grade_at_assignment"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="status" widget="badge"
+                                           decoration-success="status == 'active'"
+                                           decoration-info="status == 'ended'"
+                                           decoration-danger="status == 'inactive'"/>
+                                    <field name="member_snapshot" readonly="1"/>
+                                    <field name="notes"/>
+                                    <button name="action_end_assignment" string="Akhiri" type="object"
+                                            icon="fa-stop-circle" attrs="{'invisible': [('status', '!=', 'active')]}"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Riwayat Perubahan Grade" name="grade_history">
+                            <field name="grade_history_ids" readonly="1">
+                                <tree>
+                                    <field name="changed_at"/>
+                                    <field name="periode"/>
+                                    <field name="grade_before"/>
+                                    <field name="grade_after"/>
+                                    <field name="change_status"/>
+                                    <field name="changed_by"/>
+                                    <field name="notes"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sales_grading_supervisor_search" model="ir.ui.view">
+        <field name="name">sales.grading.supervisor.search</field>
+        <field name="model">sales.grading.supervisor</field>
+        <field name="arch" type="xml">
+            <search string="Cari Supervisor">
+                <field name="name"/>
+                <field name="team_display"/>
+                <field name="grade"/>
+                <filter name="filter_active" string="Aktif" domain="[('active', '=', True)]"/>
+                <filter name="filter_inactive" string="Tidak Aktif (Histori)" domain="[('active', '=', False)]"/>
+                <filter name="filter_all" string="Semua Status" domain="['|', ('active', '=', True), ('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sales_grading_supervisor" model="ir.actions.act_window">
+        <field name="name">Master Data Supervisor</field>
+        <field name="res_model">sales.grading.supervisor</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Belum ada data Supervisor!</p>
+            <p>Klik tombol <strong>Create / Tambah Supervisor</strong> dan pilih karyawan dari Employees Odoo.</p>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- HISTORI PENUGASAN & TIM SALES & MAPPING                      -->
+    <!-- ============================================================ -->
+    <record id="view_sales_grading_assignment_tree" model="ir.ui.view">
+        <field name="name">sales.grading.supervisor.assignment.tree</field>
+        <field name="model">sales.grading.supervisor.assignment</field>
+        <field name="arch" type="xml">
+            <tree string="Histori Penugasan Supervisor">
+                <field name="supervisor_id"/>
+                <field name="team_id"/>
+                <field name="grade_at_assignment" widget="badge"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'active'"
+                       decoration-info="status == 'ended'"
+                       decoration-danger="status == 'inactive'"/>
+                <field name="member_snapshot"/>
+                <field name="notes"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_sales_grading_assignments" model="ir.actions.act_window">
+        <field name="name">Histori Penugasan Supervisor</field>
+        <field name="res_model">sales.grading.supervisor.assignment</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_sales_grading_team_tree" model="ir.ui.view">
+        <field name="name">sales.grading.team.tree</field>
+        <field name="model">sales.grading.team</field>
+        <field name="arch" type="xml">
+            <tree string="Tim Sales &amp; Relasi Supervisor">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="crm_team_id"/>
+                <field name="orimax_team_aliases"/>
+                <field name="assignment_status_label"/>
+                <field name="assignment_status" widget="badge"
+                       decoration-success="assignment_status == 'assigned'"
+                       decoration-warning="assignment_status == 'unassigned'"
+                       decoration-danger="assignment_status == 'conflict'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sales_grading_team_form" model="ir.ui.view">
+        <field name="name">sales.grading.team.form</field>
+        <field name="model">sales.grading.team</field>
+        <field name="arch" type="xml">
+            <form string="Tim Sales">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="crm_team_id"/>
+                            <field name="orimax_team_aliases"/>
+                        </group>
+                        <group>
+                            <field name="assignment_status" widget="badge"/>
+                            <field name="current_supervisor_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Riwayat Supervisor Tim">
+                            <field name="assignment_ids">
+                                <tree editable="bottom">
+                                    <field name="supervisor_id"/>
+                                    <field name="grade_at_assignment"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="status"/>
+                                    <field name="notes"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Anggota Salesman (Histori)">
+                            <field name="member_ids">
+                                <tree editable="bottom">
+                                    <field name="employee_id"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="active"/>
+                                    <field name="notes"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sales_grading_teams" model="ir.actions.act_window">
+        <field name="name">Tim Sales &amp; Relasi</field>
+        <field name="res_model">sales.grading.team</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_sales_grading_mapping_tree" model="ir.ui.view">
+        <field name="name">sales.grading.mapping.tree</field>
+        <field name="model">sales.grading.mapping</field>
+        <field name="arch" type="xml">
+            <tree string="Mapping Salesman GP ORIMAX ke Employees Odoo" editable="bottom"
+                  decoration-muted="not is_active"
+                  decoration-danger="mapping_status != 'mapped'">
+                <field name="salesman_raw" readonly="1"/>
+                <field name="employee_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                <field name="default_team_id"/>
+                <field name="is_active" widget="boolean_toggle" string="Status Aktif"/>
+                <button name="action_toggle_active" type="object"
+                        string="AKTIF"
+                        class="btn btn-sm btn-success text-white"
+                        icon="fa-check-circle"
+                        title="Status saat ini: AKTIF. Klik untuk mengubah menjadi TIDAK AKTIF."
+                        attrs="{'invisible': [('is_active', '=', False)]}"/>
+                <button name="action_toggle_active" type="object"
+                        string="TIDAK AKTIF"
+                        class="btn btn-sm btn-danger text-white"
+                        icon="fa-times-circle"
+                        title="Status saat ini: TIDAK AKTIF. Klik untuk mengubah menjadi AKTIF."
+                        attrs="{'invisible': [('is_active', '=', True)]}"/>
+                <field name="mapping_status" widget="badge"
+                       decoration-success="mapping_status == 'mapped'"
+                       decoration-warning="mapping_status == 'ambiguous'"
+                       decoration-danger="mapping_status == 'missing'"/>
+                <field name="notes"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sales_grading_mapping_search" model="ir.ui.view">
+        <field name="name">sales.grading.mapping.search</field>
+        <field name="model">sales.grading.mapping</field>
+        <field name="arch" type="xml">
+            <search string="Cari Mapping Salesman">
+                <field name="salesman_raw" string="Nama Salesman (ORIMAX)"/>
+                <field name="employee_id" string="Karyawan Odoo"/>
+                <field name="default_team_id" string="Tim Sales Default"/>
+                <filter name="filter_active" string="Status: Aktif" domain="[('is_active', '=', True)]"/>
+                <filter name="filter_inactive" string="Status: Tidak Aktif" domain="[('is_active', '=', False)]"/>
+                <separator/>
+                <filter name="filter_mapped" string="Terpetakan" domain="[('mapping_status', '=', 'mapped')]"/>
+                <filter name="filter_unmapped" string="Belum Terpetakan" domain="[('mapping_status', '!=', 'mapped')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_is_active" string="Status Aktif" context="{'group_by': 'is_active'}"/>
+                    <filter name="group_by_team" string="Tim Sales Default" context="{'group_by': 'default_team_id'}"/>
+                    <filter name="group_by_status" string="Status Mapping" context="{'group_by': 'mapping_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sales_grading_mapping" model="ir.actions.act_window">
+        <field name="name">Mapping Salesman (ORIMAX ↔ HR)</field>
+        <field name="res_model">sales.grading.mapping</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="view_sales_grading_mapping_search"/>
+        <field name="domain">[('salesman_raw', 'not ilike', 'ufayr maaris')]</field>
+    </record>
+
+    <record id="action_server_mapping_set_active" model="ir.actions.server">
+        <field name="name">Tandai Sebagai AKTIF</field>
+        <field name="model_id" ref="model_sales_grading_mapping"/>
+        <field name="binding_model_id" ref="model_sales_grading_mapping"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.action_set_active()</field>
+    </record>
+
+    <record id="action_server_mapping_set_inactive" model="ir.actions.server">
+        <field name="name">Tandai Sebagai TIDAK AKTIF</field>
+        <field name="model_id" ref="model_sales_grading_mapping"/>
+        <field name="binding_model_id" ref="model_sales_grading_mapping"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.action_set_inactive()</field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- TRANSAKSI GP SO, LOG SINKRONISASI & CONFIG WIZARD            -->
+    <!-- ============================================================ -->
+    <record id="view_sales_grading_gp_transaction_tree" model="ir.ui.view">
+        <field name="name">sales.grading.gp.transaction.tree</field>
+        <field name="model">sales.grading.gp.transaction</field>
+        <field name="arch" type="xml">
+            <tree string="Transaksi GP SO (GP ORIMAX)" decoration-danger="not is_valid" decoration-warning="is_negative_gp">
+                <field name="year"/>
+                <field name="quarter"/>
+                <field name="month"/>
+                <field name="so_number"/>
+                <field name="tx_date_str"/>
+                <field name="salesman_raw"/>
+                <field name="employee_id"/>
+                <field name="team_id"/>
+                <field name="supervisor_id"/>
+                <field name="customer"/>
+                <field name="product"/>
+                <field name="total_net_omzet" sum="Total Omzet"/>
+                <field name="hpp_total" sum="Total HPP"/>
+                <field name="gross_profit" sum="Total GP"/>
+                <field name="is_negative_gp" invisible="1"/>
+                <field name="is_valid" widget="boolean"/>
+                <field name="mapping_issue"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sales_grading_gp_transaction_search" model="ir.ui.view">
+        <field name="name">sales.grading.gp.transaction.search</field>
+        <field name="model">sales.grading.gp.transaction</field>
+        <field name="arch" type="xml">
+            <search string="Cari Transaksi GP SO">
+                <field name="so_number"/>
+                <field name="salesman_raw"/>
+                <field name="employee_id"/>
+                <field name="team_id"/>
+                <field name="supervisor_id"/>
+                <field name="customer"/>
+                <filter name="filter_invalid" string="Belum Valid / Unmapped" domain="[('is_valid', '=', False)]"/>
+                <filter name="filter_neg_gp" string="GP Negatif" domain="[('gross_profit', '&lt;', 0)]"/>
+                <group expand="0" string="Kelompokkan">
+                    <filter name="grp_year" string="Tahun" context="{'group_by': 'year'}"/>
+                    <filter name="grp_quarter" string="Triwulan" context="{'group_by': 'quarter'}"/>
+                    <filter name="grp_team" string="Tim Sales" context="{'group_by': 'team_id'}"/>
+                    <filter name="grp_salesman" string="Salesman" context="{'group_by': 'salesman_raw'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sales_grading_gp_transactions" model="ir.actions.act_window">
+        <field name="name">Transaksi GP SO (Sumber ORIMAX)</field>
+        <field name="res_model">sales.grading.gp.transaction</field>
+        <field name="view_mode">tree</field>
+        <field name="domain">[('year', '&gt;=', '2026'), ('salesman_raw', 'not ilike', 'ufayr maaris')]</field>
+        <field name="search_view_id" ref="view_sales_grading_gp_transaction_search"/>
+    </record>
+
+    <record id="view_sales_grading_sync_log_tree" model="ir.ui.view">
+        <field name="name">sales.grading.sync.log.tree</field>
+        <field name="model">sales.grading.sync.log</field>
+        <field name="arch" type="xml">
+            <tree string="Riwayat Sinkronisasi GP ORIMAX" decoration-danger="status == 'failed'"
+                  decoration-warning="status == 'partial'" decoration-success="status == 'success'">
+                <field name="name"/>
+                <field name="sync_date"/>
+                <field name="user_id"/>
+                <field name="source_url"/>
+                <field name="status" widget="badge"/>
+                <field name="total_fetched"/>
+                <field name="created_count"/>
+                <field name="updated_count"/>
+                <field name="error_count"/>
+                <field name="duration_sec"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sales_grading_sync_log_form" model="ir.ui.view">
+        <field name="name">sales.grading.sync.log.form</field>
+        <field name="model">sales.grading.sync.log</field>
+        <field name="arch" type="xml">
+            <form string="Detail Log Sinkronisasi" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sync_date"/>
+                            <field name="user_id"/>
+                            <field name="source_url"/>
+                            <field name="status"/>
+                        </group>
+                        <group>
+                            <field name="total_fetched"/>
+                            <field name="created_count"/>
+                            <field name="updated_count"/>
+                            <field name="skipped_count"/>
+                            <field name="error_count"/>
+                            <field name="duration_sec"/>
+                        </group>
+                    </group>
+                    <group string="Bulan Tersinkronisasi">
+                        <field name="synced_months" nolabel="1"/>
+                    </group>
+                    <group string="Detail Error / Peringatan Mapping">
+                        <field name="error_detail" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sales_grading_sync_logs" model="ir.actions.act_window">
+        <field name="name">Riwayat Sinkronisasi GP ORIMAX</field>
+        <field name="res_model">sales.grading.sync.log</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- WIZARD KONFIGURASI & SYNC GP ORIMAX -->
+    <record id="view_sales_grading_sync_config_wizard_form" model="ir.ui.view">
+        <field name="name">sales.grading.sync.config.wizard.form</field>
+        <field name="model">sales.grading.sync.config.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Konfigurasi &amp; Sinkronisasi GP ORIMAX">
+                <group>
+                    <field name="gp_api_url"/>
+                    <field name="gp_api_role"/>
+                    <field name="gp_api_password" password="True"/>
+                    <field name="has_saved_password"/>
+                    <field name="force_recalc"/>
+                    <field name="last_sync_info"/>
+                </group>
+                <footer>
+                    <button name="action_save_and_sync" string="Simpan &amp; Sync Data GP SO Sekarang" type="object" class="btn-primary"/>
+                    <button name="action_save_config" string="Simpan Konfigurasi Saja" type="object" class="btn-secondary"/>
+                    <button string="Tutup" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sales_grading_sync_config" model="ir.actions.act_window">
+        <field name="name">Sinkronisasi GP ORIMAX</field>
+        <field name="res_model">sales.grading.sync.config.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- EVALUASI SUPERVISOR TREE -->
+    <record id="view_sales_grading_supervisor_eval_tree" model="ir.ui.view">
+        <field name="name">sales.grading.supervisor.eval.tree</field>
+        <field name="model">sales.grading.supervisor.eval</field>
+        <field name="arch" type="xml">
+            <tree string="Evaluasi Kinerja Supervisor" create="false" edit="false">
+                <field name="year"/>
+                <field name="quarter"/>
+                <field name="supervisor_id"/>
+                <field name="team_names"/>
+                <field name="grade_supervisor" widget="badge"/>
+                <field name="target_gp_triwulan"/>
+                <field name="realisasi_gp_triwulan"/>
+                <field name="persentase_triwulan" widget="progressbar"/>
+                <field name="akumulasi_gp_tahunan"/>
+                <field name="persentase_tahunan"/>
+                <field name="potensi_grade_berikutnya" widget="badge"/>
+                <field name="status_evaluasi" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_sales_grading_supervisor_eval" model="ir.actions.act_window">
+        <field name="name">Evaluasi Kinerja Supervisor (Data)</field>
+        <field name="res_model">sales.grading.supervisor.eval</field>
+        <field name="view_mode">tree</field>
+        <field name="domain">[('year', '&gt;=', '2026')]</field>
+    </record>
+
+    </data>
+</odoo>

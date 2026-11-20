@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <!-- 1. Dokumen Evaluasi Individu Resmi (Section G) -->
+    <record id="action_report_sales_grading_document" model="ir.actions.report">
+        <field name="name">Dokumen Evaluasi Grading Sales (PDF)</field>
+        <field name="model">sales.grading.triwulan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sales_grading_triwulan.report_sales_grading_document</field>
+        <field name="report_file">sales_grading_triwulan.report_sales_grading_document</field>
+        <field name="print_report_name">'Dokumen_Grading_' + (object.employee_name or 'Sales') + '_' + (object.periode or 'Triwulan')</field>
+        <field name="binding_model_id" ref="model_sales_grading_triwulan"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- 2. Surat Keputusan & Slip Penyesuaian Tunjangan HR -->
+    <record id="action_report_sales_compensation_slip" model="ir.actions.report">
+        <field name="name">SK &amp; Slip Penyesuaian Tunjangan HR (PDF)</field>
+        <field name="model">sales.grading.triwulan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sales_grading_triwulan.report_sales_compensation_slip</field>
+        <field name="report_file">sales_grading_triwulan.report_sales_compensation_slip</field>
+        <field name="print_report_name">'SK_Tunjangan_' + (object.employee_name or 'Sales') + '_' + (object.periode or 'Triwulan')</field>
+        <field name="binding_model_id" ref="model_sales_grading_triwulan"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- 3. Laporan Rekapitulasi Tim Triwulan (Batch Report) -->
+    <record id="action_report_sales_rekap_tim" model="ir.actions.report">
+        <field name="name">Laporan Rekapitulasi Tim Triwulan (PDF)</field>
+        <field name="model">sales.grading.triwulan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sales_grading_triwulan.report_sales_rekap_tim</field>
+        <field name="report_file">sales_grading_triwulan.report_sales_rekap_tim</field>
+        <field name="print_report_name">'Rekap_Tim_' + (object[:1].periode or 'Triwulan')</field>
+        <field name="binding_model_id" ref="model_sales_grading_triwulan"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- 4. Paperformat A4 Landscape untuk 4 Submenu Dashboard -->
+    <record id="paperformat_grading_a4_landscape" model="report.paperformat">
+        <field name="name">Grading Sales A4 Landscape</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">16</field>
+        <field name="margin_bottom">16</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">10</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- 5. Laporan PDF & HTML Print Out untuk 4 Submenu -->
+    <record id="action_report_grading_submenu_pdf" model="ir.actions.report">
+        <field name="name">Laporan Dashboard Grading Sales (PDF)</field>
+        <field name="model">res.company</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sales_grading_triwulan.report_grading_submenu_doc</field>
+        <field name="report_file">sales_grading_triwulan.report_grading_submenu_doc</field>
+        <field name="paperformat_id" ref="paperformat_grading_a4_landscape"/>
+    </record>
+
+    <record id="action_report_grading_submenu_html" model="ir.actions.report">
+        <field name="name">Laporan Dashboard Grading Sales (Print HTML)</field>
+        <field name="model">res.company</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">sales_grading_triwulan.report_grading_submenu_doc</field>
+        <field name="report_file">sales_grading_triwulan.report_grading_submenu_doc</field>
+        <field name="paperformat_id" ref="paperformat_grading_a4_landscape"/>
+    </record>
+
+    </data>
+</odoo>

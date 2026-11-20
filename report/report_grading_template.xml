@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <template id="report_sales_grading_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page" style="font-family: 'Times New Roman', serif; font-size: 13px; color: #111827; padding: 20px;">
+                    
+                    <!-- KOP DOKUMEN -->
+                    <div style="text-align: center; border-bottom: 3px double #1f2937; padding-bottom: 12px; margin-bottom: 20px;">
+                        <h2 style="margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                            DOKUMEN EVALUASI GRADING SALES TRIWULAN
+                        </h2>
+                        <p style="margin: 3px 0 0 0; font-size: 13px; font-weight: bold; color: #1e40af;">
+                            PT ASTON GRAPHINDO INDONESIA — DIVISI SALES &amp; MARKETING
+                        </p>
+                        <p style="margin: 2px 0 0 0; font-size: 11px; color: #4b5563;">
+                            Standar Operasional Penetapan Grade Otomatis Mengacu Dua Tabel Terpisah (Ketentuan Anton Wijaya)
+                        </p>
+                    </div>
+
+                    <!-- I. INFORMASI KARYAWAN -->
+                    <div style="font-weight: bold; background: #f3f4f6; padding: 6px 10px; border-left: 4px solid #1f2937; margin-bottom: 10px;">
+                        I. INFORMASI KARYAWAN &amp; PERIODE EVALUASI
+                    </div>
+                    <table class="table table-sm table-bordered" style="width: 100%; margin-bottom: 18px;">
+                        <tr>
+                            <td style="width: 25%; font-weight: bold;">Nama Karyawan</td>
+                            <td style="width: 40%; font-size: 14px; font-weight: bold;"><span t-field="doc.employee_name"/></td>
+                            <td style="width: 15%; font-weight: bold;">Periode</td>
+                            <td style="width: 20%;"><span t-field="doc.periode"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Grading Sekarang</td>
+                            <td><span t-field="doc.grading_awal"/></td>
+                            <td style="font-weight: bold;">Tanggal Dokumen</td>
+                            <td><span t-field="doc.evaluation_date" t-options='{"widget": "date"}'/></td>
+                        </tr>
+                    </table>
+
+                    <!-- II. PERHITUNGAN GROSS PROFIT -->
+                    <div style="font-weight: bold; background: #f3f4f6; padding: 6px 10px; border-left: 4px solid #1f2937; margin-bottom: 10px;">
+                        II. PERHITUNGAN GROSS PROFIT (GP) TIGA BULAN
+                    </div>
+                    <table class="table table-sm table-bordered" style="width: 100%; text-align: center; margin-bottom: 18px;">
+                        <thead style="background: #f9fafb;">
+                            <tr>
+                                <th>Realisasi Bulan 1</th>
+                                <th>Realisasi Bulan 2</th>
+                                <th>Realisasi Bulan 3</th>
+                                <th style="background: #f3f4f6;">Total GP 3 Bulan</th>
+                                <th style="background: #eff6ff; color: #1e40af;">Rata-rata GP / Bulan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span t-field="doc.gp_bulan_1"/></td>
+                                <td><span t-field="doc.gp_bulan_2"/></td>
+                                <td><span t-field="doc.gp_bulan_3"/></td>
+                                <td style="font-weight: bold;"><span t-field="doc.total_gp"/></td>
+                                <td style="font-weight: bold; font-size: 14px; color: #1e40af;"><span t-field="doc.rata_rata_gp"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- III. HASIL EVALUASI TABEL B & TABEL A -->
+                    <div style="font-weight: bold; background: #f3f4f6; padding: 6px 10px; border-left: 4px solid #1f2937; margin-bottom: 10px;">
+                        III. HASIL EVALUASI, TARGET, DAN TUNJANGAN RESMI
+                    </div>
+                    <table class="table table-sm table-bordered" style="width: 100%; margin-bottom: 24px;">
+                        <tr>
+                            <td style="width: 40%; font-weight: bold;">Potensi Grading TW Berikutnya (Berdasarkan Tabel B)</td>
+                            <td style="width: 60%; font-size: 15px; font-weight: 800; color: #1e40af;"><span t-field="doc.grading_terbaru"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Status Perubahan Grade</td>
+                            <td style="font-weight: bold;"><span t-field="doc.status_perubahan"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Target GP Berdasarkan Tabel A</td>
+                            <td style="font-weight: bold;"><span t-field="doc.target_gp_tabel_a"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Persentase Pencapaian Target (Section D)</td>
+                            <td style="font-weight: bold;"><span t-field="doc.persentase_pencapaian"/> %</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Gaji Pokok Resmi</td>
+                            <td><span t-field="doc.gaji_pokok"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Tunjangan Fungsional (Berdasarkan Tabel A)</td>
+                            <td style="font-weight: bold; color: #059669;"><span t-field="doc.tunjangan_fungsional"/></td>
+                        </tr>
+                        <tr style="background: #f8fafc;">
+                            <td style="font-weight: bold; font-size: 13.5px;">Total Kompensasi Pokok Baru</td>
+                            <td style="font-weight: bold; font-size: 14px; color: #059669;"><span t-field="doc.total_kompensasi"/></td>
+                        </tr>
+                        <tr t-if="doc.insentif_surplus &gt; 0">
+                            <td style="font-weight: bold;">Insentif Akselerasi Kinerja (1% Surplus)</td>
+                            <td style="font-weight: bold; color: #059669;"><span t-field="doc.insentif_surplus"/></td>
+                        </tr>
+                        <tr style="background: #eff6ff;">
+                            <td style="font-weight: 800; font-size: 14px;">Total Take Home Pay (THP)</td>
+                            <td style="font-weight: 800; font-size: 15px; color: #1e40af;"><span t-field="doc.take_home_pay"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- IV. PENGESAHAN DOKUMEN RESMI (SECTION G) -->
+                    <div style="font-weight: bold; background: #f3f4f6; padding: 6px 10px; border-left: 4px solid #1f2937; margin-bottom: 12px;">
+                        IV. PENGESAHAN DOKUMEN RESMI
+                    </div>
+                    <table style="width: 100%; border: none; text-align: center; margin-top: 20px;">
+                        <tr style="border: none;">
+                            <td style="width: 33%; border: none; vertical-align: top;">
+                                <div>Diketahui:</div>
+                                <div style="height: 55px;"></div>
+                                <div style="font-weight: bold; border-top: 1px solid #111827; display: inline-block; min-width: 130px; padding-top: 4px;">
+                                    <span t-field="doc.supervisor_1"/>
+                                </div>
+                            </td>
+                            <td style="width: 33%; border: none; vertical-align: top;">
+                                <div>Diketahui:</div>
+                                <div style="height: 55px;"></div>
+                                <div style="font-weight: bold; border-top: 1px solid #111827; display: inline-block; min-width: 130px; padding-top: 4px;">
+                                    <span t-field="doc.supervisor_2"/>
+                                </div>
+                            </td>
+                            <td style="width: 34%; border: none; vertical-align: top;">
+                                <div>Disetujui:</div>
+                                <div style="margin: 4px auto;">
+                                    <span style="font-size: 8px; font-weight: bold; color: #059669; border: 1px solid #10b981; border-radius: 3px; padding: 2px 6px;">
+                                        ✓ DIGITALLY VERIFIED
+                                    </span>
+                                </div>
+                                <div style="font-weight: bold; border-top: 1px solid #111827; display: inline-block; min-width: 130px; padding-top: 4px;">
+                                    <span t-field="doc.director_name"/><br/>
+                                    <small style="font-weight: normal; color: #4b5563;">Direktur Utama</small>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- DISCLAIMER RESMI WAJIB -->
+                    <div style="margin-top: 25px; font-size: 10.5px; font-style: italic; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                        * Catatan: Tanda tangan hanya untuk pengesahan dokumen, bukan persetujuan penentuan grade. Penentuan grade bersifat otomatis dan mengikat berdasarkan Tabel B.
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- TEMPLATE 2: SK & SLIP PENYESUAIAN TUNJANGAN HR -->
+    <template id="report_sales_compensation_slip">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page" style="font-family: 'Times New Roman', serif; font-size: 13.5px; color: #111827; padding: 30px;">
+                    <div style="text-align: center; border-bottom: 3px double #1f2937; padding-bottom: 12px; margin-bottom: 24px;">
+                        <h2 style="margin: 0; font-size: 18px; font-weight: 800; text-transform: uppercase;">
+                            SURAT KEPUTUSAN PENETAPAN GRADE &amp; PENYESUAIAN TUNJANGAN
+                        </h2>
+                        <p style="margin: 3px 0 0 0; font-size: 13px; font-weight: bold; color: #1e40af;">
+                            PT ASTON GRAPHINDO INDONESIA — DEPARTEMEN SUMBER DAYA MANUSIA
+                        </p>
+                        <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: bold;">
+                            Nomor: <span t-field="doc.name"/>
+                        </p>
+                    </div>
+
+                    <p style="font-size: 13px; line-height: 1.6; margin-bottom: 18px;">
+                        Berdasarkan hasil evaluasi pencapaian kinerja penjualan Gross Profit (GP) triwulanan yang mengacu pada <strong>Ketentuan Final Grading Sales (Tabel A &amp; Tabel B Terpisah)</strong>, Direksi menetapkan penyesuaian status grade dan tunjangan fungsional karyawan berikut:
+                    </p>
+
+                    <table class="table table-sm table-bordered" style="width: 100%; margin-bottom: 20px;">
+                        <tr>
+                            <td style="width: 35%; font-weight: bold;">Nama Karyawan Sales</td>
+                            <td style="width: 65%; font-size: 14px; font-weight: bold;"><span t-field="doc.employee_name"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Periode Evaluasi</td>
+                            <td><span t-field="doc.periode"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Grading Sebelumnya</td>
+                            <td><span t-field="doc.grading_awal"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Grading Baru Ditetapkan (Tabel B)</td>
+                            <td style="font-size: 14.5px; font-weight: 800; color: #1e40af;"><span t-field="doc.grading_terbaru"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Status Perubahan Karir</td>
+                            <td style="font-weight: bold;"><span t-field="doc.status_perubahan"/></td>
+                        </tr>
+                    </table>
+
+                    <div style="font-weight: bold; background: #f3f4f6; padding: 6px 10px; border-left: 4px solid #1f2937; margin-bottom: 10px;">
+                        RINCIAN KOMPENSASI BULANAN BARU (BERDASARKAN TABEL A)
+                    </div>
+                    <table class="table table-sm table-bordered" style="width: 100%; margin-bottom: 24px;">
+                        <tr>
+                            <td style="width: 45%; font-weight: bold;">Gaji Pokok Resmi</td>
+                            <td style="width: 55%; font-weight: bold;"><span t-field="doc.gaji_pokok"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Tunjangan Fungsional Sebelumnya</td>
+                            <td><span t-field="doc.tunjangan_lama"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Tunjangan Fungsional Baru (Tabel A)</td>
+                            <td style="font-weight: bold; color: #059669;"><span t-field="doc.tunjangan_fungsional"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Penyesuaian / Selisih Tunjangan</td>
+                            <td style="font-weight: bold;">
+                                <t t-if="doc.selisih_tunjangan &gt; 0">+</t><span t-field="doc.selisih_tunjangan"/>
+                            </td>
+                        </tr>
+                        <tr style="background: #f8fafc;">
+                            <td style="font-weight: bold; font-size: 14px;">Total Kompensasi Bulanan Baru</td>
+                            <td style="font-weight: 800; font-size: 15px; color: #1e40af;"><span t-field="doc.total_kompensasi"/></td>
+                        </tr>
+                    </table>
+
+                    <div style="margin-top: 40px; display: flex; justify-content: flex-end;">
+                        <div style="text-align: center; width: 220px; float: right;">
+                            <p style="font-size: 12.5px; margin-bottom: 10px;">
+                                Jakarta, <span t-field="doc.evaluation_date" t-options='{"widget": "date"}'/><br/>
+                                <strong>PT ASTON GRAPHINDO INDONESIA</strong>
+                            </p>
+                            <div style="margin: 6px auto;">
+                                <span style="font-size: 8px; font-weight: bold; color: #059669; border: 1px solid #10b981; border-radius: 3px; padding: 2px 6px;">
+                                    ✓ DIGITALLY VERIFIED
+                                </span>
+                            </div>
+                            <p style="font-size: 13px; font-weight: 800; border-top: 1px solid #111827; padding-top: 4px; margin: 0;">
+                                <span t-field="doc.director_name"/>
+                            </p>
+                            <p style="font-size: 11px; color: #4b5563; margin: 2px 0 0 0;">Direktur Utama</p>
+                        </div>
+                    </div>
+
+                    <div style="clear: both; margin-top: 30px; font-size: 10.5px; font-style: italic; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                        * Dokumen Surat Keputusan ini diterbitkan resmi oleh sistem HRIS Odoo PT Aston Graphindo Indonesia berdasarkan evaluasi kinerja objektif.
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- TEMPLATE 3: LAPORAN REKAPITULASI TIM TRIWULAN (BATCH) -->
+    <template id="report_sales_rekap_tim">
+        <t t-call="web.html_container">
+            <div class="page" style="font-family: 'Times New Roman', serif; font-size: 12.5px; color: #111827; padding: 20px;">
+                <div style="text-align: center; border-bottom: 3px double #1f2937; padding-bottom: 12px; margin-bottom: 20px;">
+                    <h2 style="margin: 0; font-size: 19px; font-weight: 800; text-transform: uppercase;">
+                        LAPORAN REKAPITULASI EVALUASI GRADING SALES TRIWULAN
+                    </h2>
+                    <p style="margin: 3px 0 0 0; font-size: 13px; font-weight: bold; color: #1e40af;">
+                        PT ASTON GRAPHINDO INDONESIA — DIVISI SALES &amp; MARKETING
+                    </p>
+                    <p style="margin: 2px 0 0 0; font-size: 11px; color: #4b5563;">
+                        Rekapitulasi Kinerja dan Hasil Penetapan Grade Otomatis Seluruh Tim Sales
+                    </p>
+                </div>
+
+                <div style="font-weight: bold; background: #f3f4f6; padding: 6px 10px; border-left: 4px solid #1f2937; margin-bottom: 10px;">
+                    I. TABEL REKAPITULASI EVALUASI TIM SALES
+                </div>
+                <table class="table table-sm table-bordered" style="width: 100%; font-size: 11.5px; margin-bottom: 20px;">
+                    <thead style="background: #f9fafb; text-align: center;">
+                        <tr>
+                            <th style="width: 25px;">No</th>
+                            <th>Nama Karyawan</th>
+                            <th>Periode</th>
+                            <th>Total GP 3 Bulan</th>
+                            <th>Rata-rata/Bulan</th>
+                            <th>Grade Awal</th>
+                            <th>Grade Baru (Tabel B)</th>
+                            <th>Target (Tabel A)</th>
+                            <th>% Capaian</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="i" t-value="1"/>
+                        <t t-foreach="docs" t-as="r">
+                            <tr>
+                                <td style="text-align: center;"><t t-esc="i"/></td>
+                                <td style="font-weight: bold;"><span t-field="r.employee_name"/></td>
+                                <td><span t-field="r.periode"/></td>
+                                <td style="text-align: right;"><span t-field="r.total_gp"/></td>
+                                <td style="text-align: right; font-weight: bold;"><span t-field="r.rata_rata_gp"/></td>
+                                <td><span t-field="r.grading_awal"/></td>
+                                <td style="font-weight: bold; color: #1e40af;"><span t-field="r.grading_terbaru"/></td>
+                                <td style="text-align: right;"><span t-field="r.target_gp_tabel_a"/></td>
+                                <td style="text-align: right; font-weight: bold;"><span t-field="r.persentase_pencapaian"/> %</td>
+                                <td style="font-weight: bold;"><span t-field="r.status_perubahan"/></td>
+                            </tr>
+                            <t t-set="i" t-value="i + 1"/>
+                        </t>
+                    </tbody>
+                </table>
+
+                <div style="font-weight: bold; background: #f3f4f6; padding: 6px 10px; border-left: 4px solid #1f2937; margin-bottom: 10px;">
+                    II. PENGESAHAN DOKUMEN REKAPITULASI
+                </div>
+                <table style="width: 100%; border: none; text-align: center; margin-top: 20px;">
+                    <tr style="border: none;">
+                        <td style="width: 33%; border: none; vertical-align: top;">
+                            <div>Diketahui:</div>
+                            <div style="height: 50px;"></div>
+                            <div style="font-weight: bold; border-top: 1px solid #111827; display: inline-block; min-width: 130px; padding-top: 4px;">
+                                Supervisor 1
+                            </div>
+                        </td>
+                        <td style="width: 33%; border: none; vertical-align: top;">
+                            <div>Diketahui:</div>
+                            <div style="height: 50px;"></div>
+                            <div style="font-weight: bold; border-top: 1px solid #111827; display: inline-block; min-width: 130px; padding-top: 4px;">
+                                Supervisor 2
+                            </div>
+                        </td>
+                        <td style="width: 34%; border: none; vertical-align: top;">
+                            <div>Disetujui:</div>
+                            <div style="margin: 4px auto;">
+                                <span style="font-size: 8px; font-weight: bold; color: #059669; border: 1px solid #10b981; border-radius: 3px; padding: 2px 6px;">
+                                    ✓ DIGITALLY VERIFIED
+                                </span>
+                            </div>
+                            <div style="font-weight: bold; border-top: 1px solid #111827; display: inline-block; min-width: 130px; padding-top: 4px;">
+                                Anton Wijaya<br/>
+                                <small style="font-weight: normal; color: #4b5563;">Direktur Utama</small>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div style="margin-top: 25px; font-size: 10.5px; font-style: italic; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                    * Catatan: Tanda tangan hanya untuk pengesahan dokumen, bukan persetujuan penentuan grade. Penetapan grade dihitung otomatis oleh sistem sesuai Ketentuan Final Grading Sales Triwulan.
+                </div>
+            </div>
+        </t>
+    </template>
+
+    </data>
+</odoo>

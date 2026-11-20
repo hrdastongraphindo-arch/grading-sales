@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_sales_grading_triwulan" model="ir.sequence">
+            <field name="name">Sequence Evaluasi Grading Sales Triwulan</field>
+            <field name="code">sales.grading.triwulan</field>
+            <field name="prefix">SK-GRD/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+    </data>
+</odoo>

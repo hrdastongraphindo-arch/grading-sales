@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ============================================================== -->
+    <!-- SLIDE-OVER DRAWER DETAIL SUPERVISOR                           -->
+    <!-- ============================================================== -->
+    <t t-name="sales_grading_triwulan.SupervisorSlideOverDrawer" owl="1">
+        <div class="sg-drawer-backdrop" t-on-click.self="props.onClose">
+            <div class="sg-drawer-panel">
+                <!-- DRAWER HEADER -->
+                <div class="sg-drawer-header">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="sg-avatar sg-avatar-lg">
+                            <t t-esc="getInitials(props.detail.identity.name)"/>
+                        </div>
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <h3 style="margin: 0; font-size: 17px; font-weight: 800; color: #1E293B;">
+                                    <t t-esc="props.detail.identity.name"/>
+                                </h3>
+                                <span t-att-class="'sg-badge sg-spv-' + (props.detail.identity.grade || 'supervisor')">
+                                    <t t-esc="props.detail.identity.grade_label"/>
+                                </span>
+                            </div>
+                            <div style="font-size: 12px; color: #64748B; margin-top: 3px;">
+                                Tim: <strong style="color: #334155;"><t t-esc="props.detail.identity.team_display"/></strong>
+                                <span style="margin: 0 6px;">•</span>
+                                Periode: <strong style="color: #334155;"><t t-esc="props.detail.identity.year"/></strong>
+                                <t t-if="props.detail.identity.team_composition_desc">
+                                    <span style="margin: 0 6px;">•</span>
+                                    <span style="color: #4F46E5; font-weight: 600;">
+                                        Komposisi: <t t-esc="props.detail.identity.team_composition_desc"/>
+                                    </span>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="sg-drawer-close-btn" t-on-click="props.onClose" title="Tutup">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- DRAWER BODY -->
+                <div class="sg-drawer-body">
+                    <!-- 3 SCORECARDS RINGKASAN -->
+                    <div class="sg-drawer-kpi-grid">
+                        <div class="sg-drawer-kpi-card">
+                            <div class="sg-drawer-kpi-label">Target Triwulan</div>
+                            <div class="sg-drawer-kpi-value"><t t-esc="fmtIDR(props.detail.identity.target_triwulan)"/></div>
+                            <div class="sg-drawer-kpi-sub">Rp <t t-esc="fmtIDR(props.detail.identity.target_bulanan)"/> / bln</div>
+                        </div>
+                        <div class="sg-drawer-kpi-card">
+                            <div class="sg-drawer-kpi-label">Akumulasi GP Tahunan</div>
+                            <div class="sg-drawer-kpi-value" style="color: #047857;"><t t-esc="fmtIDR(props.detail.identity.akumulasi_tahunan)"/></div>
+                            <div class="sg-drawer-kpi-sub">Target: <t t-esc="fmtIDR(props.detail.identity.target_tahunan)"/></div>
+                        </div>
+                        <div class="sg-drawer-kpi-card">
+                            <div class="sg-drawer-kpi-label">% Pencapaian Tahunan</div>
+                            <div class="sg-drawer-kpi-value" style="color: #4F46E5;"><t t-esc="fmtPct(props.detail.identity.persentase_tahunan)"/></div>
+                            <div class="sg-drawer-kpi-sub"><t t-esc="props.detail.identity.annual_complete ? '4 TW Final' : 'Berjalan (Sementara)'"/></div>
+                        </div>
+                    </div>
+
+                    <!-- TREN REALISASI BULANAN CHART -->
+                    <div class="sg-drawer-section">
+                        <div class="sg-drawer-section-title">
+                            <span>📈</span> Tren Realisasi GP Bulanan vs Target (<t t-esc="props.detail.identity.year"/>)
+                        </div>
+                        <div class="sg-chart-wrap" style="height: 190px;">
+                            <canvas t-ref="spvAnnualChart"/>
+                        </div>
+                    </div>
+
+                    <!-- ANGGOTA TIM TELEMARKETING B2G & KONTRIBUSI GP -->
+                    <div class="sg-drawer-section">
+                        <div class="sg-drawer-section-title">
+                            <span>👥</span> Anggota Tim Sales &amp; Kontribusi GP
+                        </div>
+                        <div class="sg-table-wrap">
+                            <table class="sg-table sg-table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Nama Salesman</th>
+                                        <th>Tim</th>
+                                        <th class="text-end">Transaksi</th>
+                                        <th class="text-end">Total Gross Profit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-if="!props.detail.members or props.detail.members.length === 0">
+                                        <td colspan="4" class="text-center" style="padding: 20px; color: #64748B;">
+                                            Belum ada transaksi GP untuk tim ini pada tahun terpilih.
+                                        </td>
+                                    </tr>
+                                    <tr t-foreach="props.detail.members" t-as="m" t-key="m.name">
+                                        <td class="fw-bold">
+                                            <t t-esc="m.name"/>
+                                            <span t-if="m.is_supervisor" class="sg-badge sg-spv-supervisor" style="margin-left: 6px; font-size: 10px;">Supervisor</span>
+                                        </td>
+                                        <td><t t-esc="m.team"/></td>
+                                        <td class="text-end"><t t-esc="m.tx_count"/></td>
+                                        <td class="text-end fw-bold" style="color: #047857;"><t t-esc="fmtIDR(m.gp)"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- REKAP PERFORMA TRIWULAN -->
+                    <div class="sg-drawer-section">
+                        <div class="sg-drawer-section-title">
+                            <span>📅</span> Rekap Performa per Triwulan (<t t-esc="props.detail.identity.year"/>)
+                        </div>
+                        <div class="sg-table-wrap">
+                            <table class="sg-table sg-table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Triwulan</th>
+                                        <th class="text-end">Target GP</th>
+                                        <th class="text-end">Realisasi GP</th>
+                                        <th class="text-end">% Capai</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="props.detail.quarterly" t-as="q" t-key="q.quarter">
+                                        <td class="fw-bold"><t t-esc="q.label"/></td>
+                                        <td class="text-end"><t t-esc="fmtIDR(q.target)"/></td>
+                                        <td class="text-end fw-bold" style="color: #047857;"><t t-esc="fmtIDR(q.gp)"/></td>
+                                        <td class="text-end"><t t-esc="fmtPct(q.pct)"/></td>
+                                        <td class="text-center">
+                                            <span t-att-class="q.complete ? 'sg-pill-naik' : 'sg-pill-tetap'">
+                                                <t t-esc="q.complete ? 'Lengkap' : 'Berjalan'"/>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- RINCIAN GP BULANAN -->
+                    <div class="sg-drawer-section">
+                        <div class="sg-drawer-section-title">
+                            <span>📊</span> Rincian GP per Bulan (<t t-esc="props.detail.identity.year"/>)
+                        </div>
+                        <div class="sg-table-wrap">
+                            <table class="sg-table sg-table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Bulan</th>
+                                        <th class="text-end">Jumlah Transaksi</th>
+                                        <th class="text-end">Gross Profit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="props.detail.monthly" t-as="mo" t-key="mo.month">
+                                        <td><t t-esc="mo.month_name"/></td>
+                                        <td class="text-end"><t t-esc="mo.tx_count"/></td>
+                                        <td class="text-end fw-bold"><t t-esc="fmtIDR(mo.gp)"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- HISTORI PENUGASAN TIM -->
+                    <div class="sg-drawer-section" t-if="props.detail.assignments and props.detail.assignments.length">
+                        <div class="sg-drawer-section-title">
+                            <span>📋</span> Histori Penugasan Tim
+                        </div>
+                        <div class="sg-table-wrap">
+                            <table class="sg-table sg-table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Tim</th>
+                                        <th>Grade</th>
+                                        <th>Periode</th>
+                                        <th>Anggota</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="props.detail.assignments" t-as="a" t-key="a.id">
+                                        <td class="fw-bold"><t t-esc="a.team_name"/></td>
+                                        <td><t t-esc="a.grade"/></td>
+                                        <td><t t-esc="a.date_start"/> s/d <t t-esc="a.date_end"/></td>
+                                        <td><t t-esc="a.members"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- ============================================================== -->
+    <!-- MAIN DASHBOARD SUPERVISOR / TIM                                -->
+    <!-- ============================================================== -->
+    <t t-name="sales_grading_triwulan.DashboardSupervisor" owl="1">
+        <div class="sg-root">
+            <t t-if="state.data">
+                <!-- 1. TOP HEADER & ACTION BAR (BERSIH & MODERN) -->
+                <div class="sg-spv-header">
+                    <div>
+                        <h2 class="sg-spv-header-title">
+                            <span>👔</span> Dashboard Performa Supervisor &amp; Tim
+                        </h2>
+                        <div class="sg-spv-header-sub">
+                            Monitoring pencapaian Gross Profit (GP) dan evaluasi grade tim sales
+                        </div>
+                        <div class="sg-spv-sync-info" t-if="state.data.sync">
+                            <span class="sg-spv-sync-badge">
+                                🕒 Terakhir disinkronkan: <t t-esc="state.data.sync.last_sync_wib || 'Belum pernah'"/>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="sg-spv-toolbar">
+                        <!-- DROPDOWN EXPORT -->
+                        <div class="sg-dropdown-wrap">
+                            <button type="button" class="sg-btn sg-btn-secondary-outline" t-on-click="toggleExportMenu">
+                                <span>📥</span> Export ▾
+                            </button>
+                            <div t-if="state.showExportMenu" class="sg-dropdown-menu">
+                                <button type="button" class="sg-dropdown-item" t-on-click="() => this.triggerExport('xlsx')">
+                                    <span>📊</span> Export Excel (.xlsx)
+                                </button>
+                                <button type="button" class="sg-dropdown-item" t-on-click="() => this.triggerExport('pdf')">
+                                    <span>📄</span> Export PDF (.pdf)
+                                </button>
+                                <button type="button" class="sg-dropdown-item" t-on-click="() => this.triggerExport('html')">
+                                    <span>🖨️</span> Print Out (.html)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- KETENTUAN & PERATURAN -->
+                        <button type="button"
+                                class="sg-btn sg-btn-secondary-outline"
+                                t-on-click="openRulesConfig"
+                                title="Buka dan sesuaikan Ketentuan &amp; Peraturan Grading">
+                            <span>📜</span> Ketentuan &amp; Peraturan
+                        </button>
+
+                        <!-- SECONDARY OUTLINED: MASTER SUPERVISOR -->
+                        <button t-if="state.data.access.can_manage_supervisor"
+                                type="button"
+                                class="sg-btn sg-btn-secondary-outline"
+                                t-on-click="openMasterSupervisor">
+                            <span>⚙️</span> Master Supervisor
+                        </button>
+
+                        <!-- PRIMARY CTA: SYNC DATA GP SO (GRADIENT INDIGO-ROYAL BLUE) -->
+                        <button t-if="state.data.access.can_sync"
+                                type="button"
+                                class="sg-btn sg-btn-primary-indigo"
+                                t-on-click="syncGpData"
+                                t-att-disabled="state.syncing">
+                            <span>🔄</span> <t t-esc="state.syncing ? 'Menyinkronkan...' : 'Sync Data GP SO'"/>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. COMPACT PILL FILTER BAR -->
+                <div class="sg-spv-filter-pill">
+                    <div class="sg-filter-pill-item">
+                        <label>Tahun</label>
+                        <select t-att-value="state.filters.year" t-on-change="(e) => this.onFilterChange('year', e)">
+                            <option value="ALL">Semua Tahun</option>
+                            <t t-foreach="state.data.options.years" t-as="yr" t-key="yr">
+                                <option t-att-value="yr" t-att-selected="state.filters.year == yr"><t t-esc="yr"/></option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="sg-filter-pill-item">
+                        <label>Periode Triwulan</label>
+                        <select t-att-value="state.filters.quarter" t-on-change="(e) => this.onFilterChange('quarter', e)">
+                            <option value="ALL">Semua Triwulan</option>
+                            <t t-foreach="state.data.options.quarters" t-as="q" t-key="q.key">
+                                <option t-att-value="q.key" t-att-selected="state.filters.quarter == q.key"><t t-esc="q.label"/></option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="sg-filter-pill-item">
+                        <label>Tim / Supervisor</label>
+                        <select t-att-value="state.filters.supervisor_id" t-on-change="(e) => this.onFilterChange('supervisor_id', e)">
+                            <option value="ALL">Semua Tim / Supervisor</option>
+                            <t t-foreach="state.data.options.supervisors" t-as="spv" t-key="spv.id">
+                                <option t-att-value="spv.id" t-att-selected="state.filters.supervisor_id == spv.id"><t t-esc="spv.name"/></option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="sg-filter-pill-item">
+                        <label>Status Evaluasi</label>
+                        <select t-att-value="state.filters.status_evaluasi" t-on-change="(e) => this.onFilterChange('status_evaluasi', e)">
+                            <option value="ALL">Semua Status</option>
+                            <t t-foreach="state.data.options.statuses" t-as="st" t-key="st.key">
+                                <option t-att-value="st.key" t-att-selected="state.filters.status_evaluasi == st.key"><t t-esc="st.label"/></option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="sg-filter-pill-reset">
+                        <button type="button" class="sg-btn-icon-reset" t-on-click="resetToCurrentPeriod" title="Kembalikan ke periode berjalan">
+                            ↺ Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. 4 KARTU KPI UTAMA (EXECUTIVE SCORECARDS) -->
+                <div class="sg-scorecards-grid">
+                    <!-- KARTU 1: TOTAL GP SELURUH TIM -->
+                    <div class="sg-scorecard">
+                        <div class="sg-scorecard-header">
+                            <span class="sg-scorecard-label">Total GP Seluruh Tim</span>
+                            <span class="sg-scorecard-icon">💰</span>
+                        </div>
+                        <div class="sg-scorecard-value">
+                            <t t-esc="fmtIDR(state.data.kpis.total_gp_all_teams)"/>
+                        </div>
+                        <div class="sg-mini-prog-wrap">
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748B; margin-bottom: 4px;">
+                                <span>Target: <strong><t t-esc="fmtIDR(state.data.kpis.total_target_all_teams)"/></strong></span>
+                                <span><strong style="color: #4F46E5;"><t t-esc="fmtPct(state.data.kpis.pct_achievement_total)"/></strong></span>
+                            </div>
+                            <div class="sg-mini-prog-track">
+                                <div class="sg-mini-prog-fill" t-attf-style="width: #{Math.min(100, Math.max(0, state.data.kpis.pct_achievement_total))}%;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 2: RATA-RATA PENCAPAIAN -->
+                    <div class="sg-scorecard">
+                        <div class="sg-scorecard-header">
+                            <span class="sg-scorecard-label">Rata-rata Pencapaian</span>
+                            <span class="sg-scorecard-icon">🎯</span>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+                            <div>
+                                <div class="sg-scorecard-value" style="color: #1E293B;">
+                                    <t t-esc="fmtPct(state.data.kpis.pct_achievement_avg)"/>
+                                </div>
+                                <div class="sg-scorecard-sub">Rasio capaian rata-rata tim</div>
+                            </div>
+                            <!-- CIRCULAR PROGRESS RING SVG -->
+                            <div class="sg-radial-wrap">
+                                <svg class="sg-circular-ring" width="52" height="52" viewBox="0 0 36 36">
+                                    <path class="sg-ring-bg"
+                                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                          fill="none" stroke="#E2E8F0" stroke-width="3.5" />
+                                    <path class="sg-ring-val"
+                                          t-attf-stroke-dasharray="#{Math.min(100, Math.max(0, state.data.kpis.pct_achievement_avg))}, 100"
+                                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                          fill="none" stroke="#4F46E5" stroke-width="3.5" stroke-linecap="round" />
+                                    <text x="18" y="20.5" class="sg-ring-text" text-anchor="middle" font-size="8.5" font-weight="700" fill="#1E293B">
+                                        <t t-esc="Math.round(state.data.kpis.pct_achievement_avg)"/>%
+                                    </text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 3: SUPERVISOR & TIM AKTIF (DISTRIBUSI GRADE) -->
+                    <div class="sg-scorecard">
+                        <div class="sg-scorecard-header">
+                            <span class="sg-scorecard-label">Supervisor &amp; Tim Aktif</span>
+                            <span class="sg-scorecard-icon">👥</span>
+                        </div>
+                        <div class="sg-scorecard-value">
+                            <t t-esc="state.data.kpis.total_tim_sales"/> Tim Aktif
+                        </div>
+                        <div class="sg-spv-pills-row">
+                            <span class="sg-spv-pill"><t t-esc="state.data.kpis.count_senior_spv"/> Sr Spv</span>
+                            <span class="sg-spv-pill active"><t t-esc="state.data.kpis.count_supervisor"/> Spv</span>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 4: POTENSI EVALUASI TAHUNAN -->
+                    <div class="sg-scorecard">
+                        <div class="sg-scorecard-header">
+                            <span class="sg-scorecard-label">Status Evaluasi Grade</span>
+                            <span class="sg-scorecard-icon">🎖️</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; flex-wrap: wrap;">
+                            <span class="sg-pill-naik">
+                                ▲ <t t-esc="state.data.kpis.count_potensi_naik"/> Naik
+                            </span>
+                            <span class="sg-pill-tetap">
+                                ● <t t-esc="state.data.kpis.count_potensi_tetap || 0"/> Tetap
+                            </span>
+                            <span class="sg-pill-turun">
+                                ▼ <t t-esc="state.data.kpis.count_potensi_turun"/> Potensi Turun
+                            </span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748B;">
+                            <span>Evaluasi 3 Triwulan</span>
+                            <span style="font-weight: 600; color: #475569;">Batas 70% • Target 100%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. VISUALISASI GRAFIK MODERN (2 KOLOM) -->
+                <div class="sg-charts-grid-2">
+                    <!-- GRAFIK KIRI: TARGET GP VS REALISASI GP PER SUPERVISOR -->
+                    <div class="sg-card">
+                        <div class="sg-card-header">
+                            <div>
+                                <h4 class="sg-card-title">
+                                    <span style="color: #4F46E5;">●</span> Target GP vs Realisasi GP per Supervisor
+                                </h4>
+                                <div class="sg-card-sub">Perbandingan nominal target dan capaian Gross Profit (dalam Juta Rp)</div>
+                            </div>
+                        </div>
+                        <div class="sg-card-body">
+                            <div class="sg-chart-wrap" style="height: 270px;">
+                                <canvas t-ref="chartSpvTarget"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GRAFIK KANAN: PERSENTASE PENCAPAIAN TRIWULAN VS TAHUNAN -->
+                    <div class="sg-card">
+                        <div class="sg-card-header">
+                            <div>
+                                <h4 class="sg-card-title">
+                                    <span style="color: #059669;">●</span> Persentase Pencapaian Triwulan vs Tahunan
+                                </h4>
+                                <div class="sg-card-sub">Rasio capaian periode aktif dibandingkan garis evaluasi grade (70% &amp; 100%)</div>
+                            </div>
+                            <span class="sg-pill-turun" style="font-size: 11px;">
+                                Batas Evaluasi: 70% &amp; 100%
+                            </span>
+                        </div>
+                        <div class="sg-card-body">
+                            <div class="sg-chart-wrap" style="height: 270px;">
+                                <canvas t-ref="chartSpvProgress"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. TABEL EVALUASI SUPERVISOR & TIM (SCANNABLE + SLIDE-OVER DETAIL) -->
+                <div class="sg-card">
+                    <div class="sg-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <h4 class="sg-card-title">
+                                Tabel Evaluasi Supervisor &amp; Tim (<t t-esc="filteredSupervisorRows.length"/> supervisor)
+                            </h4>
+                            <div style="font-size: 11.5px; color: #64748B;">Klik baris atau tombol detail untuk melihat kontribusi salesman di bawah tim</div>
+                        </div>
+                        <!-- QUICK SEARCH INPUT -->
+                        <div class="sg-spv-search-box">
+                            <span style="color: #94A3B8;">🔍</span>
+                            <input type="text"
+                                   placeholder="Search Supervisor / Tim..."
+                                   t-att-value="state.searchSupervisor"
+                                   t-on-input="onSearchSupervisorInput"/>
+                            <button t-if="state.searchSupervisor" type="button" class="sg-search-clear" t-on-click="clearSearchSupervisor">✕</button>
+                        </div>
+                    </div>
+
+                    <div class="sg-table-wrap">
+                        <table class="sg-table">
+                            <thead>
+                                <tr>
+                                    <th>Supervisor &amp; Tim</th>
+                                    <th class="text-center">Grade Saat Ini</th>
+                                    <th class="text-end">Target GP</th>
+                                    <th class="text-end">Realisasi GP</th>
+                                    <th class="text-center" style="min-width: 170px;">Pencapaian (%)</th>
+                                    <th class="text-center">Proyeksi Grade Berikutnya</th>
+                                    <th class="text-center" style="width: 110px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-if="filteredSupervisorRows.length === 0">
+                                    <td colspan="7" class="text-center" style="padding: 36px; color: #64748B;">
+                                        Tidak ada data supervisor yang sesuai dengan kriteria pencarian / filter.
+                                    </td>
+                                </tr>
+                                <tr t-foreach="filteredSupervisorRows" t-as="row" t-key="row.id" class="sg-spv-row" t-on-click="() => this.openDetail(row)">
+                                    <!-- KOLOM 1: AVATAR INISIAL + NAMA BOLD + NAMA TIM -->
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 11px;">
+                                            <div class="sg-avatar">
+                                                <t t-esc="getInitials(row.supervisor_name)"/>
+                                            </div>
+                                            <div>
+                                                <span class="sg-link-name">
+                                                    <t t-esc="row.supervisor_name"/>
+                                                </span>
+                                                <div style="font-size: 11.5px; color: #64748B; margin-top: 1px;">
+                                                    <t t-esc="row.team_names"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- KOLOM 2: GRADE SAAT INI (MAX 1 PILL BADGE) -->
+                                    <td class="text-center">
+                                        <span t-att-class="'sg-badge sg-spv-' + (row.grade || 'supervisor')">
+                                            <t t-esc="row.grade_label"/>
+                                        </span>
+                                    </td>
+
+                                    <!-- KOLOM 3: TARGET GP -->
+                                    <td class="text-end">
+                                        <t t-esc="fmtIDR(row.target_gp_triwulan)"/>
+                                    </td>
+
+                                    <!-- KOLOM 4: REALISASI GP -->
+                                    <td class="text-end fw-bold" style="color: #047857;">
+                                        <t t-esc="fmtIDR(row.realisasi_gp)"/>
+                                    </td>
+
+                                    <!-- KOLOM 5: PENCAPAIAN % -->
+                                    <td>
+                                        <div class="sg-progress-wrap">
+                                            <div class="sg-progress-track">
+                                                <div t-att-class="progClass(row.persentase_triwulan)"
+                                                     t-attf-style="width: #{Math.min(100, Math.max(0, row.persentase_triwulan))}%"/>
+                                            </div>
+                                            <span style="font-weight: 700; min-width: 50px; text-align: right; font-size: 12px;">
+                                                <t t-esc="fmtPct(row.persentase_triwulan)"/>
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                    <!-- KOLOM 6: PROYEKSI GRADE BERIKUTNYA -->
+                                    <td class="text-center">
+                                        <t t-if="row.potensi_keputusan === 'turun'">
+                                            <span class="sg-pill-turun">
+                                                ▼ Turun: <t t-esc="row.potensi_grade_label"/>
+                                                <t t-if="!row.annual_complete"> (Sementara)</t>
+                                            </span>
+                                        </t>
+                                        <t t-elif="row.potensi_keputusan === 'naik'">
+                                            <span class="sg-pill-naik">
+                                                ▲ Naik: <t t-esc="row.potensi_grade_label"/>
+                                                <t t-if="!row.annual_complete"> (Sementara)</t>
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="sg-pill-tetap">
+                                                ● Tetap: <t t-esc="row.potensi_grade_label"/>
+                                                <t t-if="!row.annual_complete"> (Sementara)</t>
+                                            </span>
+                                        </t>
+                                    </td>
+
+                                    <!-- KOLOM 7: AKSI -->
+                                    <td class="text-center" t-on-click.stop="">
+                                        <button type="button" class="sg-btn-detail" t-on-click="() => this.openDetail(row)">
+                                            Lihat Detail ›
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SLIDE-OVER DRAWER DETAIL SUPERVISOR -->
+                <SupervisorSlideOverDrawer t-if="state.detail" detail="state.detail" onClose.bind="closeDetail"/>
+            </t>
+            <div t-elif="state.loading" style="padding: 40px; text-align: center; color: #64748B;">
+                Memuat Dashboard Supervisor / Tim...
+            </div>
+        </div>
+    </t>
+</templates>

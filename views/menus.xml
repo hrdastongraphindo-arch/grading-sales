@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <!-- Top Root Menu (App Switcher) -->
+    <menuitem id="menu_sales_grading_root"
+              name="Grading Sales"
+              sequence="45"
+              web_icon="sales_grading_triwulan,static/description/icon.png"
+              groups="sales_grading_triwulan.group_sales_grading_user"/>
+
+    <!-- ================================================================ -->
+    <!-- 3 MENU UTAMA NAVIGASI RESMI PT ASTON GRAPHINDO INDONESIA          -->
+    <!-- ================================================================ -->
+
+    <!-- MENU 1: GRADING SALES (TERPADU: REKAP GRADING + RANKING SALESMAN) -->
+    <menuitem id="menu_sales_grading_main"
+              name="Grading Sales"
+              parent="menu_sales_grading_root"
+              action="action_grading_sales_main"
+              sequence="10"/>
+
+    <!-- MENU 2: DASHBOARD SUPERVISOR / TIM -->
+    <menuitem id="menu_grading_dashboard_supervisor"
+              name="Dashboard Supervisor / Tim"
+              parent="menu_sales_grading_root"
+              action="action_grading_dashboard_supervisor"
+              groups="sales_grading_triwulan.group_sales_grading_supervisor"
+              sequence="20"/>
+
+    <!-- MENU 3: MASTER DATA & SINKRONISASI (DROPDOWN MENU) -->
+    <menuitem id="menu_sales_grading_config"
+              name="Master Data &amp; Sinkronisasi"
+              parent="menu_sales_grading_root"
+              groups="sales_grading_triwulan.group_sales_grading_manager,base.group_system"
+              sequence="30"/>
+
+    <!-- SUB-ITEMS DI DALAM MENU 3: MASTER DATA & SINKRONISASI -->
+    <menuitem id="menu_grading_rules_config"
+              name="Ketentuan &amp; Peraturan Grading"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_rules_config"
+              sequence="5"/>
+
+    <menuitem id="menu_grading_master_supervisor"
+              name="Master Data Supervisor"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_supervisor"
+              sequence="10"/>
+
+    <menuitem id="menu_grading_teams"
+              name="Tim Sales &amp; Relasi"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_teams"
+              sequence="20"/>
+
+    <menuitem id="menu_grading_assignments"
+              name="Histori Penugasan Supervisor"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_assignments"
+              sequence="30"/>
+
+    <menuitem id="menu_grading_mapping"
+              name="Mapping Salesman (ORIMAX ↔ HR)"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_mapping"
+              sequence="40"/>
+
+    <menuitem id="menu_grading_sync_config"
+              name="Sync GP ORIMAX"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_sync_config"
+              groups="base.group_system"
+              sequence="50"/>
+
+    <menuitem id="menu_grading_sync_logs"
+              name="Riwayat Sinkronisasi GP"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_sync_logs"
+              sequence="60"/>
+
+    <menuitem id="menu_grading_gp_transactions"
+              name="Transaksi GP SO (ORIMAX)"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_gp_transactions"
+              sequence="70"/>
+
+    <menuitem id="menu_grading_supervisor_eval_data"
+              name="Data Evaluasi Supervisor"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_supervisor_eval"
+              sequence="80"/>
+
+    <menuitem id="menu_sales_grading_triwulan_action"
+              name="Dokumen Evaluasi Triwulan (List/Form)"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_triwulan"
+              sequence="90"/>
+
+    <menuitem id="menu_sales_grading_simulator_action"
+              name="What-If Target Simulator"
+              parent="menu_sales_grading_config"
+              action="action_sales_grading_simulator_wizard"
+              sequence="100"/>
+
+    </data>
+</odoo>

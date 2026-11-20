@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="module_category_sales_grading" model="ir.module.category">
+            <field name="name">Grading Sales Triwulan</field>
+            <field name="description">Manajemen Hak Akses Evaluasi Grading Sales Triwulan</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="group_sales_grading_user" model="res.groups">
+            <field name="name">Salesman (Lihat Grading Sendiri)</field>
+            <field name="category_id" ref="module_category_sales_grading"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="group_sales_grading_supervisor" model="res.groups">
+            <field name="name">Supervisor Tim Sales</field>
+            <field name="category_id" ref="module_category_sales_grading"/>
+            <field name="implied_ids" eval="[(4, ref('group_sales_grading_user'))]"/>
+        </record>
+
+        <record id="group_sales_grading_manager" model="res.groups">
+            <field name="name">Manager &amp; Direksi</field>
+            <field name="category_id" ref="module_category_sales_grading"/>
+            <field name="implied_ids" eval="[(4, ref('group_sales_grading_supervisor'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Base Internal User otomatis mewarisi hak akses Sales User -->
+        <record id="base.group_user" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_sales_grading_user'))]"/>
+        </record>
+
+        <!-- Record Rules: Salesman hanya melihat miliknya sendiri -->
+        <record id="rule_sales_grading_salesman_own" model="ir.rule">
+            <field name="name">Grading Salesman: Lihat Milik Sendiri</field>
+            <field name="model_id" ref="model_sales_grading_triwulan"/>
+            <field name="groups" eval="[(4, ref('group_sales_grading_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+            <field name="domain_force">['|', ('user_id', '=', user.id), ('employee_id.user_id', '=', user.id)]</field>
+        </record>
+
+        <!-- Record Rules: Supervisor melihat tim yang menjadi tanggung jawabnya -->
+        <record id="rule_sales_grading_supervisor_team" model="ir.rule">
+            <field name="name">Grading Supervisor: Lihat Tim Tanggung Jawab</field>
+            <field name="model_id" ref="model_sales_grading_triwulan"/>
+            <field name="groups" eval="[(4, ref('group_sales_grading_supervisor'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+            <field name="domain_force">['|', '|', ('supervisor_id.user_id', '=', user.id), ('user_id', '=', user.id), ('employee_id.user_id', '=', user.id)]</field>
+        </record>
+
+        <!-- Record Rules: Manager & Direksi melihat seluruh data -->
+        <record id="rule_sales_grading_manager_all" model="ir.rule">
+            <field name="name">Grading Manager &amp; Direksi: Semua Data</field>
+            <field name="model_id" ref="model_sales_grading_triwulan"/>
+            <field name="groups" eval="[(4, ref('group_sales_grading_manager')), (4, ref('base.group_system'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+    </data>
+</odoo>

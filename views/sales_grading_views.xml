@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <!-- TREE / LIST VIEW -->
+    <record id="view_sales_grading_triwulan_tree" model="ir.ui.view">
+        <field name="name">sales.grading.triwulan.tree</field>
+        <field name="model">sales.grading.triwulan</field>
+        <field name="arch" type="xml">
+            <tree string="Evaluasi Grading Sales Triwulan"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="year"/>
+                <field name="quarter"/>
+                <field name="employee_name"/>
+                <field name="team_id"/>
+                <field name="periode"/>
+                <field name="grading_awal" widget="badge"/>
+                <field name="total_gp" sum="Total Akumulasi Tim"/>
+                <field name="rata_rata_gp" avg="Rata-rata Tim"/>
+                <field name="grading_terbaru" widget="badge"
+                       decoration-warning="grading_terbaru == 'star'"
+                       decoration-primary="grading_terbaru == 'executive'"
+                       decoration-success="grading_terbaru == 'senior'"
+                       decoration-muted="grading_terbaru == 'junior'"
+                       decoration-danger="grading_terbaru == 'new'"/>
+                <field name="target_gp_tabel_a"/>
+                <field name="persentase_pencapaian" widget="progressbar"/>
+                <field name="status_perubahan" widget="badge"
+                       decoration-success="status_perubahan == 'promosi'"
+                       decoration-danger="status_perubahan == 'demosi'"
+                       decoration-info="status_perubahan == 'stabil'"/>
+                <field name="data_validity" widget="badge"
+                       decoration-success="data_validity == 'valid'"
+                       decoration-warning="data_validity in ('incomplete', 'sync_pending')"
+                       decoration-danger="data_validity == 'unmapped'"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'confirmed'"
+                       decoration-success="state == 'done'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
+    <record id="view_sales_grading_triwulan_form" model="ir.ui.view">
+        <field name="name">sales.grading.triwulan.form</field>
+        <field name="model">sales.grading.triwulan</field>
+        <field name="arch" type="xml">
+            <form string="Dokumen Evaluasi Grading Sales Triwulan">
+                <header>
+                    <button name="action_confirm" string="Validasi Supervisor" type="object"
+                            states="draft" class="btn-primary"/>
+                    <button name="action_done" string="Sahkan Direktur (Anton Wijaya)" type="object"
+                            states="confirmed" class="btn-success"/>
+                    <button name="action_verify_integrity" string="Audit Integritas Data" type="object"
+                            class="btn-secondary"/>
+                    <button name="%(action_sales_grading_simulator_wizard)d" string="What-If Simulator" type="action"
+                            class="btn-outline-info"/>
+                    <button name="action_create_rollover" string="Rollover Triwulan Baru" type="object"
+                            states="done" class="btn-outline-primary"/>
+                    <button name="action_draft" string="Set ke Draft" type="object"
+                            states="cancel,confirmed" class="btn-secondary"/>
+                    <button name="action_cancel" string="Batalkan" type="object"
+                            states="draft,confirmed" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Stat buttons if needed -->
+                    </div>
+
+                    <!-- Notice Banner: Pemisahan Dua Tabel -->
+                    <div class="alert alert-warning" role="alert" style="margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: bold;">
+                            KETENTUAN FINAL DIREKSI (ANTON WIJAYA): DUA TABEL DENGAN FUNGSI BERBEDA
+                        </h4>
+                        <p style="margin: 0; font-size: 12.5px;">
+                            <strong>1. Tabel B (Penentuan Grade):</strong> Satu-satunya acuan resmi penetapan grade berdasarkan rata-rata GP bulanan 3 bulan.<br/>
+                            <strong>2. Tabel A (Target &amp; Kompensasi):</strong> Acuan target kinerja dan tunjangan fungsional (bukan penentu grade).
+                        </p>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" string="No. Dokumen Evaluasi"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="I. INFORMASI KARYAWAN &amp; PERIODE">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="employee_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="employee_name" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="user_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="team_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="supervisor_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="year" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="quarter" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="periode" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="evaluation_date" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="grading_awal" widget="selection" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="gp_source" readonly="1"/>
+                            <field name="data_validity" widget="badge"/>
+                            <field name="validity_note" readonly="1"/>
+                        </group>
+                        <group string="II. REALISASI GROSS PROFIT (3 BULAN)">
+                            <field name="gp_bulan_1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="gp_bulan_2" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="gp_bulan_3" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <separator/>
+                            <field name="total_gp" readonly="1" style="font-weight: bold;"/>
+                            <field name="rata_rata_gp" readonly="1" style="font-weight: bold; color: #1e40af; font-size: 15px;"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- TAB 1: HASIL PENENTUAN GRADE (TABEL B & TABEL A) -->
+                        <page string="Hasil Penetapan Grade &amp; Kompensasi" name="grading_results">
+                            <group>
+                                <group string="PENETAPAN GRADE RESMI (TABEL B)">
+                                    <field name="grading_terbaru" readonly="1" widget="badge"
+                                           decoration-warning="grading_terbaru == 'star'"
+                                           decoration-primary="grading_terbaru == 'executive'"
+                                           decoration-success="grading_terbaru == 'senior'"
+                                           decoration-muted="grading_terbaru == 'junior'"
+                                           decoration-danger="grading_terbaru == 'new'"/>
+                                    <field name="status_perubahan" readonly="1" widget="badge"
+                                           decoration-success="status_perubahan == 'promosi'"
+                                           decoration-danger="status_perubahan == 'demosi'"
+                                           decoration-info="status_perubahan == 'stabil'"/>
+                                    <field name="target_gp_tabel_a" readonly="1"/>
+                                    <field name="persentase_pencapaian" readonly="1" widget="progressbar"/>
+                                </group>
+                                <group string="HAK KOMPENSASI &amp; GAJI (TABEL A)">
+                                    <field name="gaji_pokok" readonly="1"/>
+                                    <field name="tunjangan_fungsional" readonly="1" style="color: #059669; font-weight: bold;"/>
+                                    <field name="total_kompensasi" readonly="1" style="font-weight: bold;"/>
+                                    <field name="insentif_surplus" readonly="1"/>
+                                    <field name="take_home_pay" readonly="1" style="font-weight: bold; color: #1e40af; font-size: 14px;"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 2: PENGESAHAN DOKUMEN & TANDA TANGAN (SECTION G) -->
+                        <page string="Pengesahan Dokumen Resmi (3 Tanda Tangan)" name="signatures">
+                            <div class="alert alert-secondary" role="alert" style="margin-top: 10px;">
+                                <em>"Catatan: Tanda tangan hanya untuk pengesahan dokumen, bukan persetujuan penentuan grade. Penentuan grade bersifat otomatis dan mengikat berdasarkan Tabel B."</em>
+                            </div>
+                            <group>
+                                <group string="Pemeriksa 1">
+                                    <field name="supervisor_1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                </group>
+                                <group string="Pemeriksa 2">
+                                    <field name="supervisor_2" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                </group>
+                            </group>
+                            <group string="Pengesahan Direksi">
+                                <field name="director_name" readonly="1"/>
+                            </group>
+                            <div style="padding: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; text-align: center; margin-top: 10px;">
+                                <span style="font-size: 12px; font-weight: bold; color: #059669;">
+                                    ✓ DIGITAL VERIFICATION ACTIVE: PT ASTON GRAPHINDO INDONESIA (DISETUJUI OLEH ANTON WIJAYA)
+                                </span>
+                            </div>
+                        </page>
+
+                        <!-- TAB 3: CATATAN & AUDIT TRAIL -->
+                        <page string="Catatan &amp; Audit Perubahan Grade" name="notes">
+                            <div style="margin-bottom: 10px;">
+                                <button name="action_recalculate_with_audit" string="Kalkulasi Ulang (Catat Audit)" type="object" class="btn-secondary"/>
+                            </div>
+                            <field name="notes" placeholder="Tuliskan catatan khusus atau review kinerja karyawan di sini..."/>
+                            <separator string="Riwayat Perubahan Grade (Audit Trail)"/>
+                            <field name="history_ids" readonly="1">
+                                <tree>
+                                    <field name="changed_at"/>
+                                    <field name="periode"/>
+                                    <field name="grade_before"/>
+                                    <field name="grade_after"/>
+                                    <field name="change_status"/>
+                                    <field name="change_reason"/>
+                                    <field name="changed_by"/>
+                                    <field name="notes"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <!-- CHATTER INTEGRATION -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW -->
+    <record id="view_sales_grading_triwulan_search" model="ir.ui.view">
+        <field name="name">sales.grading.triwulan.search</field>
+        <field name="model">sales.grading.triwulan</field>
+        <field name="arch" type="xml">
+            <search string="Pencarian Evaluasi Sales">
+                <field name="employee_name" string="Nama Sales"/>
+                <field name="periode" string="Periode"/>
+                <field name="grading_terbaru" string="Grade Baru"/>
+                <filter name="filter_promosi" string="Promosi" domain="[('status_perubahan', '=', 'promosi')]"/>
+                <filter name="filter_demosi" string="Demosi" domain="[('status_perubahan', '=', 'demosi')]"/>
+                <filter name="filter_stabil" string="Stabil" domain="[('status_perubahan', '=', 'stabil')]"/>
+                <separator/>
+                <filter name="filter_done" string="Disahkan Direktur" domain="[('state', '=', 'done')]"/>
+                <filter name="filter_confirmed" string="Tervalidasi Supervisor" domain="[('state', '=', 'confirmed')]"/>
+                <group expand="0" string="Kelompokkan Berdasarkan">
+                    <filter name="group_by_periode" string="Periode Triwulan" context="{'group_by': 'periode'}"/>
+                    <filter name="group_by_grade" string="Grade Terbaru (Tabel B)" context="{'group_by': 'grading_terbaru'}"/>
+                    <filter name="group_by_status" string="Status Perubahan" context="{'group_by': 'status_perubahan'}"/>
+                    <filter name="group_by_state" string="Status Dokumen" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- GRAPH VIEW -->
+    <record id="view_sales_grading_triwulan_graph" model="ir.ui.view">
+        <field name="name">sales.grading.triwulan.graph</field>
+        <field name="model">sales.grading.triwulan</field>
+        <field name="arch" type="xml">
+            <graph string="Grafik Analitik Kinerja Sales Triwulan" type="bar">
+                <field name="employee_name"/>
+                <field name="total_gp" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- PIVOT VIEW -->
+    <record id="view_sales_grading_triwulan_pivot" model="ir.ui.view">
+        <field name="name">sales.grading.triwulan.pivot</field>
+        <field name="model">sales.grading.triwulan</field>
+        <field name="arch" type="xml">
+            <pivot string="Matriks Evaluasi Penjualan Tahunan">
+                <field name="employee_name" type="row"/>
+                <field name="periode" type="col"/>
+                <field name="total_gp" type="measure"/>
+                <field name="rata_rata_gp" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- WINDOW ACTION -->
+    <record id="action_sales_grading_triwulan" model="ir.actions.act_window">
+        <field name="name">Evaluasi Grading Sales Triwulan</field>
+        <field name="res_model">sales.grading.triwulan</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="domain">[('year', '&gt;=', '2026'), ('state', '!=', 'cancel'), ('employee_name', 'not ilike', 'ufayr maaris')]</field>
+        <field name="search_view_id" ref="view_sales_grading_triwulan_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Belum ada data evaluasi grading sales!
+            </p>
+            <p>
+                Klik tombol <strong>Create</strong> untuk memulai penginputan realisasi GP sales triwulanan sesuai ketentuan Anton Wijaya.
+            </p>
+        </field>
+    </record>
+
+    </data>
+</odoo>

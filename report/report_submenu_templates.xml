@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <template id="report_grading_submenu_doc">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <div class="page" style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; color: #0f172a;">
+                    <t t-if="is_html_print">
+                        <style>
+                            @media print { .sg-no-print { display: none !important; } }
+                        </style>
+                        <div class="sg-no-print" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 11px; color: #1e3a8a; font-weight: 600;">
+                                Pratinjau Cetak — PT. Aston Graphindo Indonesia (<t t-esc="report_title"/>)
+                            </span>
+                            <button onclick="window.print()" style="background: #1d4ed8; color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-weight: 600; cursor: pointer; font-size: 11px;">
+                                🖨️ Cetak Sekarang
+                            </button>
+                        </div>
+                    </t>
+                    <!-- KOP PERUSAHAAN -->
+                    <table style="width: 100%; border-bottom: 2px solid #0f172a; margin-bottom: 12px; padding-bottom: 8px;">
+                        <tr>
+                            <td style="width: 14%; vertical-align: middle;">
+                                <img src="/sales_grading_triwulan/static/src/img/logo_asn.png" style="max-height: 48px; max-width: 120px;"/>
+                            </td>
+                            <td style="width: 58%; vertical-align: middle;">
+                                <div style="font-size: 15px; font-weight: 800; color: #0f172a; text-transform: uppercase;">
+                                    PT ASTON GRAPHINDO INDONESIA
+                                </div>
+                                <div style="font-size: 12.5px; font-weight: 700; color: #1e40af; margin-top: 2px;">
+                                    <t t-esc="report_title"/>
+                                </div>
+                                <div style="font-size: 9.5px; color: #475569; margin-top: 2px;">
+                                    Tahun: <strong><t t-esc="year_label"/></strong> |
+                                    Periode: <strong><t t-esc="quarter_label"/></strong> |
+                                    Sumber GP: GP ORIMAX (gp.orimax.co.id)
+                                </div>
+                            </td>
+                            <td style="width: 28%; text-align: right; vertical-align: middle; font-size: 9px; color: #475569;">
+                                <div>Tanggal Cetak: <strong><t t-esc="print_date"/></strong></div>
+                                <div>Dicetak Oleh: <strong><t t-esc="printed_by"/></strong></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- SUBMENU 1: DASHBOARD GRADING SALESMAN -->
+                    <t t-if="submenu == 'dashboard_salesman'">
+                        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                            <thead>
+                                <tr style="background-color: #0f172a; color: #ffffff; font-size: 8.5px;">
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 3%;">No</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 5%;">Thn</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 7%;">Triwulan</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 16%;">Nama Salesman</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 10%;">Tim</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 10%;">Grading Sekarang</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 12%;">Potensi Grading TW Berikutnya</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 11%; text-align: right;">Target GP</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 13%; text-align: right;">Total GP 3 Bln</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 12%; text-align: right;">Rata-rata/Bln</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 6%; text-align: right;">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.get('rows', [])" t-as="r" style="font-size: 8.5px; page-break-inside: avoid;">
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['no']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['year']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['quarter']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; font-weight: 600;"><t t-esc="r['employee_name']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1;"><t t-esc="r['team_name']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['grading_awal_label']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;"><t t-esc="r['grading_terbaru_label']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_idr(r['target_gp_bulanan'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right; font-weight: 600;"><t t-esc="format_idr(r['total_gp'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_idr(r['rata_rata_gp'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_pct(r['persentase_pencapaian'])"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- SUBMENU 2: REKAP GRADING SALESMAN -->
+                    <t t-if="submenu in ('rekap_salesman', 'grading_sales', 'sales_grading_main')">
+                        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                            <thead>
+                                <tr style="background-color: #0f172a; color: #ffffff; font-size: 8.5px;">
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 3%;">No</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 5%;">Thn</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 7%;">Triwulan</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 15%;">Nama Salesman</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 9%;">Tim</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 9%;">Grading Sekarang</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 10%;">Potensi Grading TW Berikutnya</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 11%; text-align: right;">Total GP 3 Bln</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 10%; text-align: right;">Rata-rata/Bln</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 10%; text-align: right;">Target GP/Bln</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 6%; text-align: right;">%</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 8%;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.get('rows', [])" t-as="r" style="font-size: 8.5px; page-break-inside: avoid;">
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['no']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['year']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['quarter']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; font-weight: 600;"><t t-esc="r['employee_name']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1;"><t t-esc="r['team_name']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['grading_awal_label']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;"><t t-esc="r['grading_terbaru_label']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right; font-weight: 600;"><t t-esc="format_idr(r['total_gp'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_idr(r['rata_rata_gp'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_idr(r['target_gp_bulanan'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_pct(r['persentase_pencapaian'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['status_perubahan_label']"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- SUBMENU 3: RANGKING SALESMAN -->
+                    <t t-if="submenu == 'ranking_salesman'">
+                        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                            <thead>
+                                <tr style="background-color: #0f172a; color: #ffffff; font-size: 8.5px;">
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 6%;">Rank</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 6%;">Thn</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 8%;">Triwulan</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 18%;">Nama Salesman</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 11%;">Tim</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 13%; text-align: right;">Total GP</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 13%; text-align: right;">Rata-rata/Bln</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 11%; text-align: right;">Target GP/Bln</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 7%; text-align: right;">%</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 11%;">Grading</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.get('rows', [])" t-as="r" style="font-size: 8.5px; page-break-inside: avoid;">
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 800;">#<t t-esc="r['no']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['year']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['quarter']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; font-weight: 600;"><t t-esc="r['employee_name']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1;"><t t-esc="r['team_name']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right; font-weight: 700;"><t t-esc="format_idr(r['total_gp'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_idr(r['rata_rata_gp'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_idr(r['target_gp_bulanan'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_pct(r['persentase_pencapaian'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;"><t t-esc="r['grading_terbaru_label']"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- SUBMENU 4: DASHBOARD SUPERVISOR / TIM -->
+                    <t t-if="submenu == 'dashboard_supervisor'">
+                        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                            <thead>
+                                <tr style="background-color: #0f172a; color: #ffffff; font-size: 8.5px;">
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 3%;">No</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 5%;">Thn</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 6%;">Qtr</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 14%;">Nama Supervisor</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 10%;">Tim</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 10%;">Grade</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 11%; text-align: right;">Target GP</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 11%; text-align: right;">Realisasi GP</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 6%; text-align: right;">% Qtr</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 11%; text-align: right;">Akumulasi 4 Qtr</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 6%; text-align: right;">% Thn</th>
+                                    <th style="padding: 5px 4px; border: 1px solid #334155; width: 11%;">Potensi / Hasil</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.get('rows', [])" t-as="r" style="font-size: 8.5px; page-break-inside: avoid;">
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['no']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['year']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;"><t t-esc="r['quarter']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; font-weight: 600;"><t t-esc="r['supervisor_name']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1;"><t t-esc="r['team_names']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;"><t t-esc="r['grade_label']"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_idr(r['target_gp_triwulan'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right; font-weight: 600;"><t t-esc="format_idr(r['realisasi_gp'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_pct(r['persentase_triwulan'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right; font-weight: 600;"><t t-esc="format_idr(r['akumulasi_gp_tahunan'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: right;"><t t-esc="format_pct(r['persentase_tahunan'])"/></td>
+                                    <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;">
+                                        <t t-esc="r['potensi_grade_label']"/>
+                                        (<t t-esc="'Final' if r['annual_complete'] else 'Sementara'"/>)
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- FOOTER -->
+                    <div class="footer" style="border-top: 1px solid #cbd5e1; padding-top: 5px; font-size: 8.5px; color: #64748b; width: 100%;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="text-align: left;">PT. Aston Graphindo Indonesia — Sistem Grading Sales Triwulan (GP ORIMAX)</td>
+                                <td style="text-align: right;">Halaman <span class="page"/> dari <span class="topage"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    </data>
+</odoo>

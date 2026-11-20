@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Default API URL & Role (tanpa password di source code) -->
+        <record id="ir_config_param_gp_api_url" model="ir.config_parameter">
+            <field name="key">sales_grading.gp_api_url</field>
+            <field name="value">https://gp.orimax.co.id</field>
+        </record>
+        <record id="ir_config_param_gp_api_role" model="ir.config_parameter">
+            <field name="key">sales_grading.gp_api_role</field>
+            <field name="value">manager</field>
+        </record>
+
+        <!-- Scheduled Action sinkronisasi otomatis GP ORIMAX (aman jika password belum diisi) -->
+        <record id="ir_cron_sync_gp_orimax" model="ir.cron">
+            <field name="name">Grading Sales: Sinkronisasi Otomatis GP ORIMAX</field>
+            <field name="model_id" ref="model_sales_grading_sync_log"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_run_sync()</field>
+            <field name="interval_number">6</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+    <data noupdate="0">
+        <!-- Idempotent: Inisialisasi Supervisor Awal & Mapping 12 Salesman ORIMAX + Migrasi Aman -->
+        <function model="sales.grading.supervisor" name="_init_default_supervisors_and_teams"/>
+        <function model="sales.grading.mapping" name="init_default_orimax_mappings"/>
+        <function model="sales.grading.triwulan" name="_migrate_legacy_grading_records"/>
+    </data>
+</odoo>

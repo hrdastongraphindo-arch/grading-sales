@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_sales_grading_simulator_wizard_form" model="ir.ui.view">
+            <field name="name">sales.grading.simulator.wizard.form</field>
+            <field name="model">sales.grading.simulator.wizard</field>
+            <field name="arch" type="xml">
+                <form string="What-If Target Simulator GP Bulan 3">
+                    <div class="alert alert-info" role="alert" style="margin-bottom: 16px;">
+                        <strong>Fungsi Simulator:</strong> Menghitung kekurangan target penjualan Gross Profit (GP) pada Bulan ke-3 untuk meraih grade tertentu berdasarkan ambang batas resmi <strong>Tabel B</strong>.
+                    </div>
+                    <group>
+                        <group string="1. Posisi Karir &amp; Target">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="grade_saat_ini"/>
+                            <field name="target_grade"/>
+                        </group>
+                        <group string="2. Realisasi GP Dua Bulan Pertama">
+                            <field name="gp_bulan_1"/>
+                            <field name="gp_bulan_2"/>
+                            <field name="total_dua_bulan" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="3. Hasil Simulasi Kebutuhan Bulan 3">
+                        <group>
+                            <field name="target_total_gp" readonly="1"/>
+                            <field name="required_gp_bulan_3" readonly="1" decoration-danger="required_gp_bulan_3 &gt; 0" decoration-success="required_gp_bulan_3 == 0"/>
+                            <field name="selisih_tunjangan" readonly="1" decoration-success="selisih_tunjangan &gt; 0"/>
+                        </group>
+                        <group>
+                            <field name="status_kesimpulan" readonly="1" nolabel="1" widget="text" style="font-weight: bold; color: #1e40af;"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Tutup Simulator" class="btn-primary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_sales_grading_simulator_wizard" model="ir.actions.act_window">
+            <field name="name">What-If Target Simulator</field>
+            <field name="res_model">sales.grading.simulator.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

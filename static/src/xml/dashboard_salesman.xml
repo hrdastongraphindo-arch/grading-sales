@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="sales_grading_triwulan.DashboardSalesman" owl="1">
+        <div class="sg-root">
+            <t t-if="state.data">
+                <!-- HEADER -->
+                <div class="sg-header">
+                    <div>
+                        <h2 class="sg-header-title">
+                            <span>📊</span> Dashboard Grading Salesman
+                        </h2>
+                        <div class="sg-header-sub">
+                            PT. Aston Graphindo Indonesia
+                        </div>
+                    </div>
+                    <div class="sg-toolbar-actions">
+                        <button t-if="state.data.access.can_sync" class="sg-btn sg-btn-white" t-on-click="syncGpData" t-att-disabled="state.syncing">
+                            <span>🔄</span> <t t-esc="state.syncing ? 'Menyinkronkan...' : 'Sync Data GP SO'"/>
+                        </button>
+                        <button class="sg-btn sg-btn-outline" t-on-click="() => this.fetchData()">↻ Refresh</button>
+                        <button class="sg-btn sg-btn-excel" t-on-click="() => this.exportFile('xlsx')">📥 Export Excel</button>
+                        <button class="sg-btn sg-btn-outline" t-on-click="() => this.exportFile('pdf')">📄 Export PDF</button>
+                        <button class="sg-btn sg-btn-outline" t-on-click="() => this.exportFile('html')">🖨️ Print Out</button>
+                    </div>
+                </div>
+
+                <!-- FILTER BAR (7 Filter) -->
+                <div class="sg-filter-bar">
+                    <div class="sg-filter-item">
+                        <label>Tahun</label>
+                        <select t-att-value="state.filters.year" t-on-change="(e) => this.onFilterChange('year', e)">
+                            <option value="ALL" t-att-selected="state.filters.year === 'ALL'">Semua Tahun (≥ 2026)</option>
+                            <t t-foreach="state.data.options.years" t-as="yr" t-key="yr">
+                                <option t-att-value="yr" t-att-selected="state.filters.year == yr"><t t-esc="yr"/></option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="sg-filter-item">
+                        <label>Triwulan</label>
+                        <select t-att-value="state.filters.quarter" t-on-change="(e) => this.onFilterChange('quarter', e)">
+                            <option value="ALL">Semua Triwulan</option>
+                            <t t-foreach="state.data.options.quarters" t-as="q" t-key="q.key">
+                                <option t-att-value="q.key" t-att-selected="state.filters.quarter == q.key"><t t-esc="q.label"/></option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="sg-filter-item">
+                        <label>Tim Sales</label>
+                        <select t-att-value="state.filters.team_id" t-on-change="(e) => this.onFilterChange('team_id', e)">
+                            <option value="ALL">Semua Tim</option>
+                            <t t-foreach="state.data.options.teams" t-as="tm" t-key="tm.id">
+                                <option t-att-value="tm.id"><t t-esc="tm.name"/></option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="sg-filter-item">
+                        <label>Nama Salesman</label>
+                        <select t-att-value="state.filters.employee_name" t-on-change="(e) => this.onFilterChange('employee_name', e)">
+                            <option value="ALL">Semua Salesman</option>
+                            <t t-foreach="state.data.options.salesmen" t-as="sm" t-key="sm">
+                                <option t-att-value="sm"><t t-esc="sm"/></option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="sg-filter-item">
+                        <label>Grading Sekarang</label>
+                        <select t-att-value="state.filters.grading_awal" t-on-change="(e) => this.onFilterChange('grading_awal', e)">
+                            <option value="ALL">Semua Grade</option>
+                            <t t-foreach="state.data.options.grades" t-as="g" t-key="g.key">
+                                <option t-att-value="g.key"><t t-esc="g.label"/></option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="sg-filter-item">
+                        <label>Potensi Grading TW Berikutnya</label>
+                        <select t-att-value="state.filters.grading_terbaru" t-on-change="(e) => this.onFilterChange('grading_terbaru', e)">
+                            <option value="ALL">Semua Grade</option>
+                            <t t-foreach="state.data.options.grades" t-as="g" t-key="g.key">
+                                <option t-att-value="g.key"><t t-esc="g.label"/></option>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="sg-filter-item">
+                        <label>Status Perubahan</label>
+                        <select t-att-value="state.filters.status_perubahan" t-on-change="(e) => this.onFilterChange('status_perubahan', e)">
+                            <option value="ALL">Semua Status</option>
+                            <t t-foreach="state.data.options.statuses" t-as="st" t-key="st.key">
+                                <option t-att-value="st.key"><t t-esc="st.label"/></option>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 10 KPI CARDS -->
+                <div class="sg-kpi-grid">
+                    <div class="sg-kpi-card accent-navy">
+                        <div class="sg-kpi-label">1. Total Salesman</div>
+                        <div class="sg-kpi-value"><t t-esc="state.data.kpis.total_salesman"/></div>
+                        <div class="sg-kpi-sub">Evaluasi periode terpilih</div>
+                    </div>
+                    <div class="sg-kpi-card accent-blue">
+                        <div class="sg-kpi-label">2. Total Gross Profit</div>
+                        <div class="sg-kpi-value" style="font-size: 16px;"><t t-esc="fmtIDR(state.data.kpis.total_gp)"/></div>
+                        <div class="sg-kpi-sub">Akumulasi GP 3 bulan</div>
+                    </div>
+                    <div class="sg-kpi-card accent-blue">
+                        <div class="sg-kpi-label">3. Rata-rata GP / Salesman</div>
+                        <div class="sg-kpi-value" style="font-size: 16px;"><t t-esc="fmtIDR(state.data.kpis.avg_gp_per_salesman)"/></div>
+                        <div class="sg-kpi-sub">Per triwulan</div>
+                    </div>
+                    <div class="sg-kpi-card accent-gold">
+                        <div class="sg-kpi-label">4. Star Sales</div>
+                        <div class="sg-kpi-value" style="color: #b45309;"><t t-esc="state.data.kpis.count_star"/></div>
+                        <div class="sg-kpi-sub">≥ Rp77 Jt/bln</div>
+                    </div>
+                    <div class="sg-kpi-card accent-blue">
+                        <div class="sg-kpi-label">5. Executive Sales</div>
+                        <div class="sg-kpi-value" style="color: #1d4ed8;"><t t-esc="state.data.kpis.count_executive"/></div>
+                        <div class="sg-kpi-sub">Rp55 - &lt;77 Jt/bln</div>
+                    </div>
+                    <div class="sg-kpi-card accent-green">
+                        <div class="sg-kpi-label">6. Senior Sales</div>
+                        <div class="sg-kpi-value" style="color: #16a34a;"><t t-esc="state.data.kpis.count_senior"/></div>
+                        <div class="sg-kpi-sub">Rp30 - &lt;55 Jt/bln</div>
+                    </div>
+                    <div class="sg-kpi-card accent-orange">
+                        <div class="sg-kpi-label">7. Junior Sales</div>
+                        <div class="sg-kpi-value" style="color: #ea580c;"><t t-esc="state.data.kpis.count_junior"/></div>
+                        <div class="sg-kpi-sub">Rp15 - &lt;30 Jt/bln</div>
+                    </div>
+                    <div class="sg-kpi-card accent-gray">
+                        <div class="sg-kpi-label">8. New Sales</div>
+                        <div class="sg-kpi-value" style="color: #475569;"><t t-esc="state.data.kpis.count_new"/></div>
+                        <div class="sg-kpi-sub">&lt; Rp15 Jt/bln</div>
+                    </div>
+                    <div class="sg-kpi-card accent-green">
+                        <div class="sg-kpi-label">9. Promosi Grade</div>
+                        <div class="sg-kpi-value" style="color: #16a34a;"><t t-esc="state.data.kpis.count_promosi"/></div>
+                        <div class="sg-kpi-sub">Kenaikan grade</div>
+                    </div>
+                    <div class="sg-kpi-card accent-red">
+                        <div class="sg-kpi-label">10. Demosi Grade</div>
+                        <div class="sg-kpi-value" style="color: #dc2626;"><t t-esc="state.data.kpis.count_demosi"/></div>
+                        <div class="sg-kpi-sub">Penurunan grade</div>
+                    </div>
+                </div>
+
+                <!-- 5 CHARTS -->
+                <div class="sg-charts-grid">
+                    <div class="sg-card">
+                        <div class="sg-card-header"><h4 class="sg-card-title">1. Distribusi Grading Salesman (Tabel B)</h4></div>
+                        <div class="sg-card-body"><div class="sg-chart-wrap"><canvas t-ref="chartGrade"/></div></div>
+                    </div>
+                    <div class="sg-card">
+                        <div class="sg-card-header"><h4 class="sg-card-title">2. Total GP per Tim Sales</h4></div>
+                        <div class="sg-card-body"><div class="sg-chart-wrap"><canvas t-ref="chartTeam"/></div></div>
+                    </div>
+                    <div class="sg-card">
+                        <div class="sg-card-header"><h4 class="sg-card-title">3. Target GP (Tabel A) vs Realisasi GP</h4></div>
+                        <div class="sg-card-body"><div class="sg-chart-wrap"><canvas t-ref="chartTarget"/></div></div>
+                    </div>
+                    <div class="sg-card">
+                        <div class="sg-card-header"><h4 class="sg-card-title">4. Perubahan Grading: Promosi, Stabil, Demosi</h4></div>
+                        <div class="sg-card-body"><div class="sg-chart-wrap"><canvas t-ref="chartStatus"/></div></div>
+                    </div>
+                </div>
+
+                <div class="sg-card">
+                    <div class="sg-card-header"><h4 class="sg-card-title">5. Tren Gross Profit Berdasarkan Triwulan</h4></div>
+                    <div class="sg-card-body"><div class="sg-chart-wrap" style="height: 220px;"><canvas t-ref="chartTrend"/></div></div>
+                </div>
+
+                <!-- MAIN TABLE -->
+                <div class="sg-card">
+                    <div class="sg-card-header">
+                        <h4 class="sg-card-title">Tabel Evaluasi Grading Salesman (Klik Nama untuk Detail)</h4>
+                        <span style="font-size: 12px; color: #64748b;"><t t-esc="state.data.rows.length"/> data</span>
+                    </div>
+                    <div class="sg-table-wrap">
+                        <table class="sg-table">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Tahun</th>
+                                    <th>Triwulan</th>
+                                    <th class="sortable" t-on-click="() => this.toggleSort('employee_name')">Nama Salesman ⇅</th>
+                                    <th>Tim</th>
+                                    <th>Grading Sekarang</th>
+                                    <th class="sortable" t-on-click="() => this.toggleSort('grading_terbaru')">Potensi Grading TW Berikutnya ⇅</th>
+                                    <th class="text-end">Target GP/Bln</th>
+                                    <th class="text-end sortable" t-on-click="() => this.toggleSort('total_gp')">Total GP 3 Bln ⇅</th>
+                                    <th class="text-end sortable" t-on-click="() => this.toggleSort('rata_rata_gp')">Rata-rata GP/Bln ⇅</th>
+                                    <th class="sortable" t-on-click="() => this.toggleSort('persentase_pencapaian')">% Pencapaian ⇅</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="state.data.rows" t-as="r" t-key="r.id">
+                                    <td><t t-esc="r.no"/></td>
+                                    <td><t t-esc="r.year"/></td>
+                                    <td><t t-esc="r.quarter_label"/></td>
+                                    <td>
+                                        <a class="sg-link-name" t-on-click="() => this.openDetail(r)">
+                                            <t t-esc="r.employee_name"/>
+                                        </a>
+                                        <div t-if="!r.is_valid_final" style="margin-top: 2px;">
+                                            <span class="sg-badge sg-status-incomplete" style="font-size: 10px;">
+                                                Belum Final: <t t-esc="r.validity_note || 'Belum Lengkap'"/>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td><t t-esc="r.team_name"/></td>
+                                    <td><span t-att-class="gradeClass(r.grading_awal)"><t t-esc="r.grading_awal_label"/></span></td>
+                                    <td>
+                                        <span t-if="r.is_valid_final" t-att-class="gradeClass(r.grading_terbaru)">
+                                            <t t-esc="r.grading_terbaru_label"/>
+                                        </span>
+                                        <span t-else="" class="sg-badge sg-status-incomplete">
+                                            Sementara (<t t-esc="r.grading_terbaru_label"/>)
+                                        </span>
+                                    </td>
+                                    <td class="text-end"><t t-esc="fmtIDR(r.target_gp_bulanan)"/></td>
+                                    <td class="text-end fw-bold"><t t-esc="fmtIDR(r.total_gp)"/></td>
+                                    <td class="text-end"><t t-esc="fmtIDR(r.rata_rata_gp)"/></td>
+                                    <td>
+                                        <div class="sg-progress-wrap">
+                                            <div class="sg-progress-track">
+                                                <div t-att-class="progClass(r.persentase_pencapaian)"
+                                                     t-attf-style="width: #{Math.min(100, Math.max(0, r.persentase_pencapaian))}%"/>
+                                            </div>
+                                            <span style="font-weight: 700; min-width: 52px; text-align: right;">
+                                                <t t-esc="fmtPct(r.persentase_pencapaian)"/>
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr t-if="!state.data.rows.length">
+                                    <td colspan="11" class="text-center" style="padding: 28px; color: #64748b;">
+                                        Tidak ada data grading salesman untuk filter yang dipilih. Jalankan <strong>Sync Data GP SO</strong> untuk menarik data dari GP ORIMAX.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+
+            <t t-if="state.detail">
+                <SalesmanDetailModal detail="state.detail" onClose.bind="closeDetail"/>
+            </t>
+        </div>
+    </t>
+</templates>
