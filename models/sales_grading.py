@@ -297,11 +297,27 @@ class SalesGradingTriwulan(models.Model):
             self._record_history_entry(rec, 'auto_eval', _('Pembentukan evaluasi grading awal'))
         return records
 
+    def write(self, vals):
+        res = super().write(vals)
+        if not self.env.context.get('skip_recompute_spv'):
+            gp_fields = {'gp_bulan_1', 'gp_bulan_2', 'gp_bulan_3', 'total_gp', 'rata_rata_gp', 'team_id', 'team_name', 'state', 'data_validity'}
+            if any(f in vals for f in gp_fields):
+                periods = {(r.year, r.quarter) for r in self if r.year and r.quarter}
+                if periods:
+                    spv_recs = self.sudo().search([
+                        ('state', '!=', 'cancel'),
+                        ('grading_awal', '=', 'supervisor'),
+                    ]).filtered(lambda s: (s.year, s.quarter) in periods and s not in self)
+                    if spv_recs:
+                        spv_recs.with_context(skip_recompute_spv=True)._compute_grading_data()
+        return res
+
     @api.depends('gp_bulan_1', 'gp_bulan_2', 'gp_bulan_3', 'grading_awal',
-                 'bulan_1_synced', 'bulan_2_synced', 'bulan_3_synced')
+                 'team_id', 'team_name', 'bulan_1_synced', 'bulan_2_synced', 'bulan_3_synced')
     def _compute_grading_data(self):
         Supervisor = self.env['sales.grading.supervisor'].sudo().with_context(active_test=False)
         spv_emp_ids = set(Supervisor.search([('active', '=', True)]).mapped('employee_id').ids)
+        spv_records = []
         for rec in self:
             g1 = rec.gp_bulan_1 or 0.0
             g2 = rec.gp_bulan_2 or 0.0
@@ -312,10 +328,11 @@ class SalesGradingTriwulan(models.Model):
             rec.total_gp = total
             rec.rata_rata_gp = avg
 
+            emp_clean = (rec.employee_name or '').strip().upper()
             is_spv = (
                 rec.grading_awal == 'supervisor' or
                 (rec.employee_id and rec.employee_id.id in spv_emp_ids) or
-                ((rec.employee_name or '').strip().upper() in ('SATRIYO WIBOWO', 'MUHAMMAD NASHIRUDIN'))
+                (emp_clean in ('SATRIYO WIBOWO', 'MUHAMMAD NASHIRUDIN'))
             )
             if is_spv:
                 rec.grading_awal = 'supervisor'
@@ -330,8 +347,7 @@ class SalesGradingTriwulan(models.Model):
                 rec.total_kompensasi = 2_592_154.0
                 rec.insentif_surplus = 0.0
                 rec.take_home_pay = 2_592_154.0
-                target_3bln = 600_000_000.0
-                rec.persentase_pencapaian = round((total / target_3bln) * 100.0, 2)
+                spv_records.append(rec)
                 continue
 
             # 1. Penentuan Grade Otomatis: HANYA DARI TABEL B
@@ -406,6 +422,86 @@ class SalesGradingTriwulan(models.Model):
                 insentif = 0.0
             rec.insentif_surplus = insentif
             rec.take_home_pay = rec.total_kompensasi + insentif
+
+        # Pass 2: Perhitungan Persentase Pencapaian Target untuk Supervisor
+        # Dihitung dari: Jumlah pencapaian Omzet GP seluruh salesman tim dibagi target supervisor (200.000.000)
+        if spv_records:
+            Mapping = self.env['sales.grading.mapping'].sudo()
+            active_maps = Mapping.search([
+                ('is_active', '=', True),
+                ('salesman_raw', 'not ilike', 'ufayr maaris')
+            ])
+            active_emp_ids = set(active_maps.mapped('employee_id').ids) if active_maps else set()
+            active_names = {m.salesman_raw.strip().upper() for m in active_maps if m.salesman_raw} if active_maps else set()
+            active_emp_names = {m.employee_id.name.strip().upper() for m in active_maps if m.employee_id and m.employee_id.name} if active_maps else set()
+            valid_active_names = active_names | active_emp_names
+
+            for rec in spv_records:
+                domain = [
+                    ('state', '!=', 'cancel'),
+                    ('data_validity', '!=', 'demo'),
+                    ('year', '=', rec.year),
+                    ('quarter', '=', rec.quarter),
+                ]
+                if rec.id:
+                    domain.append(('id', '!=', rec.id))
+
+                if rec.team_id:
+                    domain.append(('team_id', '=', rec.team_id.id))
+                elif rec.team_name:
+                    domain.append(('team_name', '=', rec.team_name))
+                else:
+                    emp_upper = (rec.employee_name or '').strip().upper()
+                    if 'SATRIYO' in emp_upper:
+                        domain.append(('team_name', 'ilike', 'Satriyo'))
+                    elif 'NASHIR' in emp_upper:
+                        domain.append(('team_name', 'ilike', 'Nashir'))
+                    else:
+                        domain.append(('id', '=', 0))
+
+                team_recs = self.env['sales.grading.triwulan'].sudo().search(domain)
+                salesmen = team_recs.filtered(lambda r: (
+                    r.id != rec.id and
+                    r.grading_awal != 'supervisor' and
+                    r.grading_terbaru != 'supervisor' and
+                    (r.employee_name or '').strip().upper() not in ('SATRIYO WIBOWO', 'MUHAMMAD NASHIRUDIN') and
+                    (not r.employee_id or r.employee_id.id not in spv_emp_ids)
+                ))
+
+                if valid_active_names:
+                    salesmen = salesmen.filtered(lambda r: (
+                        (r.employee_id and r.employee_id.id in active_emp_ids) or
+                        ((r.employee_name or '').strip().upper() in valid_active_names)
+                    ))
+
+                # Sertakan juga salesman yang sedang ada dalam buffer self (jika ada in-memory)
+                for s_rec in self:
+                    if s_rec.id != rec.id and s_rec.year == rec.year and s_rec.quarter == rec.quarter:
+                        is_same_team = False
+                        if rec.team_id and s_rec.team_id == rec.team_id:
+                            is_same_team = True
+                        elif rec.team_name and s_rec.team_name == rec.team_name:
+                            is_same_team = True
+                        elif 'SATRIYO' in (rec.employee_name or '').upper() and 'SATRIYO' in (s_rec.team_name or '').upper():
+                            is_same_team = True
+                        elif 'NASHIR' in (rec.employee_name or '').upper() and 'NASHIR' in (s_rec.team_name or '').upper():
+                            is_same_team = True
+
+                        if is_same_team and s_rec not in salesmen:
+                            s_name = (s_rec.employee_name or '').strip().upper()
+                            if (s_rec.grading_awal != 'supervisor' and
+                                s_rec.grading_terbaru != 'supervisor' and
+                                s_name not in ('SATRIYO WIBOWO', 'MUHAMMAD NASHIRUDIN') and
+                                (not s_rec.employee_id or s_rec.employee_id.id not in spv_emp_ids)):
+                                if not valid_active_names or (s_rec.employee_id and s_rec.employee_id.id in active_emp_ids) or (s_name in valid_active_names):
+                                    salesmen |= s_rec
+
+                total_salesman_gp = sum(salesmen.mapped('total_gp'))
+                spv_target = 200_000_000.0
+                if spv_target > 0:
+                    rec.persentase_pencapaian = round((total_salesman_gp / spv_target) * 100.0, 2)
+                else:
+                    rec.persentase_pencapaian = 0.0
 
     def _record_history_entry(self, rec, reason='auto_eval', notes=''):
         self.env['sales.grading.history'].create({

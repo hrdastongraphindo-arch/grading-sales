@@ -572,6 +572,11 @@ class SalesGradingSyncLog(models.Model):
                 new_rec = Grading.create(vals)
                 last_grade_by_salesman[sales_key] = new_rec.grading_terbaru
 
+        # Pastikan seluruh record supervisor mengkalkulasi persentase pencapaian dari total omzet GP tim salesman
+        spv_all = Grading.search([('state', '!=', 'cancel'), ('grading_awal', '=', 'supervisor')])
+        if spv_all:
+            spv_all.with_context(skip_recompute_spv=True)._compute_grading_data()
+
 
 class SalesGradingSyncConfigWizard(models.TransientModel):
     _name = 'sales.grading.sync.config.wizard'
