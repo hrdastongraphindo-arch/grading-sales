@@ -372,7 +372,8 @@ class SalesGradingTriwulan(models.Model):
             except Exception:
                 pass
 
-            rec.target_gp_tabel_a = komp['target_gp']
+            target_grading_sekarang = komp_lama['target_gp']
+            rec.target_gp_tabel_a = target_grading_sekarang
             rec.gaji_pokok = komp['gaji_pokok']
             rec.tunjangan_fungsional = komp['tunjangan']
             rec.tunjangan_lama = komp_lama['tunjangan']
@@ -380,9 +381,9 @@ class SalesGradingTriwulan(models.Model):
             rec.total_kompensasi = komp['gaji_pokok'] + komp['tunjangan']
 
             # 3. Formula Persentase Pencapaian Target (Section D):
-            # (Rata-rata GP / Target GP Tabel A) * 100%
-            if komp['target_gp'] > 0:
-                rec.persentase_pencapaian = round((avg / komp['target_gp']) * 100.0, 2)
+            # Dibagi Target Grading Sekarang: (Rata-rata GP / Target GP Bulanan Grading Sekarang) * 100%
+            if target_grading_sekarang > 0:
+                rec.persentase_pencapaian = round((avg / target_grading_sekarang) * 100.0, 2)
             else:
                 rec.persentase_pencapaian = 0.0
 
@@ -397,8 +398,9 @@ class SalesGradingTriwulan(models.Model):
                 rec.status_perubahan = 'stabil'
 
             # 5. Insentif Akselerasi Kinerja (1% surplus atas target) & THP
-            if avg > komp['target_gp']:
-                surplus = avg - komp['target_gp']
+            # Surplus dihitung dari target Grading Sekarang
+            if target_grading_sekarang > 0 and avg > target_grading_sekarang:
+                surplus = avg - target_grading_sekarang
                 insentif = round(surplus * 0.01)
             else:
                 insentif = 0.0
@@ -454,9 +456,18 @@ class SalesGradingTriwulan(models.Model):
         self.ensure_one()
         expected_total = (self.gp_bulan_1 or 0.0) + (self.gp_bulan_2 or 0.0) + (self.gp_bulan_3 or 0.0)
         expected_avg = round(expected_total / 3.0)
-        expected_grade = tentukan_grade_tabel_b(expected_avg)
-        expected_target = TABEL_A_DATA[expected_grade]['target_gp']
-        expected_tunjangan = TABEL_A_DATA[expected_grade]['tunjangan']
+        expected_grade = tentukan_grade_tabel_b(expected_avg, env=self.env)
+        expected_target = TABEL_A_DATA.get(self.grading_awal, TABEL_A_DATA['new'])['target_gp']
+        expected_tunjangan = TABEL_A_DATA.get(expected_grade, TABEL_A_DATA['new'])['tunjangan']
+        try:
+            cfg = self.env['sales.grading.rules.config'].sudo().get_active_config()
+            cfg_rules = {r.grade: r for r in cfg.salesman_rule_ids}
+            if self.grading_awal in cfg_rules:
+                expected_target = cfg_rules[self.grading_awal].target_gp_monthly
+            if expected_grade in cfg_rules:
+                expected_tunjangan = cfg_rules[expected_grade].tunjangan_fungsional
+        except Exception:
+            pass
 
         errors = []
         if self.total_gp != expected_total:

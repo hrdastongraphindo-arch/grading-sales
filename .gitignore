@@ -1,0 +1,33 @@
+# Python & Bytecode
+*.py[cod]
+*$py.class
+__pycache__/
+*.so
+.Python
+
+# Odoo & Backups
+*.log
+*.dump
+*.sql
+*.zip
+*.tar.gz
+*.swp
+*.bak
+*~
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE & OS Files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+*.bat
