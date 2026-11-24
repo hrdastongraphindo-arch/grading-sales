@@ -424,7 +424,8 @@ class SalesGradingTriwulan(models.Model):
             rec.take_home_pay = rec.total_kompensasi + insentif
 
         # Pass 2: Perhitungan Persentase Pencapaian Target untuk Supervisor
-        # Dihitung dari: Jumlah pencapaian Omzet GP seluruh salesman tim dibagi target supervisor (200.000.000)
+        # Dihitung dari: Jumlah pencapaian Omzet GP seluruh anggota tim (termasuk Supervisor)
+        # dibagi Target Supervisor (200 juta/bulan atau 600 juta/triwulan)
         if spv_records:
             Mapping = self.env['sales.grading.mapping'].sudo()
             active_maps = Mapping.search([
@@ -443,8 +444,6 @@ class SalesGradingTriwulan(models.Model):
                     ('year', '=', rec.year),
                     ('quarter', '=', rec.quarter),
                 ]
-                if rec.id:
-                    domain.append(('id', '!=', rec.id))
 
                 if rec.team_id:
                     domain.append(('team_id', '=', rec.team_id.id))
@@ -460,23 +459,20 @@ class SalesGradingTriwulan(models.Model):
                         domain.append(('id', '=', 0))
 
                 team_recs = self.env['sales.grading.triwulan'].sudo().search(domain)
-                salesmen = team_recs.filtered(lambda r: (
-                    r.id != rec.id and
-                    r.grading_awal != 'supervisor' and
-                    r.grading_terbaru != 'supervisor' and
-                    (r.employee_name or '').strip().upper() not in ('SATRIYO WIBOWO', 'MUHAMMAD NASHIRUDIN') and
-                    (not r.employee_id or r.employee_id.id not in spv_emp_ids)
-                ))
 
+                # Termasuk seluruh salesman di timnya serta supervisor sendiri
                 if valid_active_names:
-                    salesmen = salesmen.filtered(lambda r: (
+                    team_members = team_recs.filtered(lambda r: (
                         (r.employee_id and r.employee_id.id in active_emp_ids) or
-                        ((r.employee_name or '').strip().upper() in valid_active_names)
+                        ((r.employee_name or '').strip().upper() in valid_active_names) or
+                        r.id == rec.id
                     ))
+                else:
+                    team_members = team_recs
 
-                # Sertakan juga salesman yang sedang ada dalam buffer self (jika ada in-memory)
+                # Sertakan juga anggota tim yang sedang ada dalam buffer self (jika ada in-memory)
                 for s_rec in self:
-                    if s_rec.id != rec.id and s_rec.year == rec.year and s_rec.quarter == rec.quarter:
+                    if s_rec.year == rec.year and s_rec.quarter == rec.quarter:
                         is_same_team = False
                         if rec.team_id and s_rec.team_id == rec.team_id:
                             is_same_team = True
@@ -487,19 +483,16 @@ class SalesGradingTriwulan(models.Model):
                         elif 'NASHIR' in (rec.employee_name or '').upper() and 'NASHIR' in (s_rec.team_name or '').upper():
                             is_same_team = True
 
-                        if is_same_team and s_rec not in salesmen:
+                        if is_same_team and s_rec not in team_members:
                             s_name = (s_rec.employee_name or '').strip().upper()
-                            if (s_rec.grading_awal != 'supervisor' and
-                                s_rec.grading_terbaru != 'supervisor' and
-                                s_name not in ('SATRIYO WIBOWO', 'MUHAMMAD NASHIRUDIN') and
-                                (not s_rec.employee_id or s_rec.employee_id.id not in spv_emp_ids)):
-                                if not valid_active_names or (s_rec.employee_id and s_rec.employee_id.id in active_emp_ids) or (s_name in valid_active_names):
-                                    salesmen |= s_rec
+                            if s_rec.id == rec.id or not valid_active_names or (s_rec.employee_id and s_rec.employee_id.id in active_emp_ids) or (s_name in valid_active_names):
+                                team_members |= s_rec
 
-                total_salesman_gp = sum(salesmen.mapped('total_gp'))
-                spv_target = 200_000_000.0
-                if spv_target > 0:
-                    rec.persentase_pencapaian = round((total_salesman_gp / spv_target) * 100.0, 2)
+                total_team_gp = sum(team_members.mapped('total_gp'))
+                # Target Supervisor: 200.000.000/bulan atau 600.000.000/triwulan
+                spv_target_triwulan = (rec.target_gp_tabel_a * 3.0) if rec.target_gp_tabel_a else 600_000_000.0
+                if spv_target_triwulan > 0:
+                    rec.persentase_pencapaian = round((total_team_gp / spv_target_triwulan) * 100.0, 2)
                 else:
                     rec.persentase_pencapaian = 0.0
 
